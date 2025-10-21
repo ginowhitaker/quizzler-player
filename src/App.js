@@ -64,6 +64,7 @@ export default function PlayerApp() {
       setAnswer('');
       setSelectedConfidence(null);
       setSubmitted(false);
+      setAnswerResult(null); // Clear previous feedback
       setScreen('question');
     });
 
