@@ -86,11 +86,6 @@ socket.on('player:answerMarked', (data) => {
     submittedRef.current = false;
   }
 });
-    
-    return data.teams;
-  });
-});
-
 
     socket.on('player:gameCompleted', (data) => {
       setTeams(data.teams);
