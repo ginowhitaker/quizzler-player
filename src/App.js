@@ -1,661 +1,439 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://quizzler-production.up.railway.app';
 
-export default function QuizzlerPlayerApp() {
+export default function PlayerApp() {
   const [socket, setSocket] = useState(null);
-  const [screen, setScreen] = useState('welcome');
+  const [screen, setScreen] = useState('join');
   const [gameCode, setGameCode] = useState('');
   const [teamName, setTeamName] = useState('');
-  const [game, setGame] = useState(null);
-  const [team, setTeam] = useState(null);
+  const [teams, setTeams] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [questionNumber, setQuestionNumber] = useState(0);
+  const [isFinal, setIsFinal] = useState(false);
   const [answer, setAnswer] = useState('');
   const [selectedConfidence, setSelectedConfidence] = useState(null);
-  const [wager, setWager] = useState('');
+  const [usedConfidences, setUsedConfidences] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
+  const [wasCorrect, setWasCorrect] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(API_URL, {
+    const newSocket = io(BACKEND_URL, {
       transports: ['websocket', 'polling']
     });
-
-    newSocket.on('connect', () => console.log('Connected'));
-    newSocket.on('error', (error) => alert(error.message));
-
+    
     setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Connected to backend');
+    });
+
+    newSocket.on('error', (error) => {
+      console.error('Socket error:', error);
+      alert(error.message);
+    });
+
     return () => newSocket.close();
   }, []);
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('player:joined', ({ game: g, team: t }) => {
-      setGame(g);
-      setTeam(t);
-      setScreen('waiting');
+    socket.on('player:joined', (data) => {
+      console.log('Joined game:', data);
+      setTeams(data.teams);
+      const myTeam = data.teams.find(t => t.name === teamName);
+      setUsedConfidences(myTeam?.usedConfidences || []);
+      
+      if (data.currentQuestion) {
+        setCurrentQuestion(data.currentQuestion.text);
+        setQuestionNumber(data.currentQuestion.number);
+        setIsFinal(data.currentQuestion.isFinal);
+        setScreen('question');
+      } else {
+        setScreen('waiting');
+      }
     });
 
-    socket.on('question:pushed', ({ questionNumber, questionText }) => {
-      setCurrentQuestion({ number: questionNumber, text: questionText });
-      setGame(prev => ({ ...prev, status: 'active', questionNumber }));
+    socket.on('player:questionReceived', (data) => {
+      setCurrentQuestion(data.question);
+      setQuestionNumber(data.questionNumber);
+      setIsFinal(data.isFinal);
       setAnswer('');
       setSelectedConfidence(null);
+      setSubmitted(false);
+      setWasCorrect(null);
       setScreen('question');
     });
 
-    socket.on('question:final', ({ questionText }) => {
-      setCurrentQuestion({ text: questionText, isFinal: true });
-      setGame(prev => ({ ...prev, status: 'final' }));
-      setAnswer('');
-      setWager('');
-      setScreen('finalQuestion');
+    socket.on('player:answerSubmitted', () => {
+      setSubmitted(true);
+      if (!isFinal && selectedConfidence) {
+        setUsedConfidences(prev => [...prev, selectedConfidence]);
+      }
     });
 
-    socket.on('game:waiting', () => {
-      setScreen('waiting');
-      setCurrentQuestion(null);
+    socket.on('player:scoresUpdated', (data) => {
+      setTeams(data.teams);
     });
 
-    socket.on('answer:submitted', ({ questionKey }) => {
-      setScreen('answerSubmitted');
-    });
-
-    socket.on('answer:marked', ({ correct, newScore }) => {
-      setTeam(prev => ({ ...prev, score: newScore }));
-      setScreen(correct ? 'correct' : 'incorrect');
-      setTimeout(() => setScreen('waiting'), 3000);
-    });
-
-    socket.on('game:completed', ({ winner, winnerScore, leaderboard }) => {
-      setGame(prev => ({ ...prev, status: 'completed', winner, winnerScore, leaderboard }));
-      setScreen('gameComplete');
+    socket.on('player:gameCompleted', (data) => {
+      setTeams(data.teams);
+      setScreen('completed');
     });
 
     return () => {
       socket.off('player:joined');
-      socket.off('question:pushed');
-      socket.off('question:final');
-      socket.off('game:waiting');
-      socket.off('answer:submitted');
-      socket.off('answer:marked');
-      socket.off('game:completed');
+      socket.off('player:questionReceived');
+      socket.off('player:answerSubmitted');
+      socket.off('player:scoresUpdated');
+      socket.off('player:gameCompleted');
     };
-  }, [socket]);
+  }, [socket, teamName, isFinal, selectedConfidence]);
 
-  const handleJoinGame = () => {
+  const joinGame = () => {
     if (!gameCode || !teamName) {
       alert('Please enter both game code and team name');
       return;
     }
-    socket.emit('player:join', { gameCode: gameCode.toUpperCase(), teamName });
+    socket.emit('player:join', { 
+      gameCode: gameCode.toUpperCase(), 
+      teamName 
+    });
   };
 
-  const handleSubmitAnswer = () => {
+  const submitAnswer = () => {
     if (!answer) {
       alert('Please enter an answer');
       return;
     }
-
-    if (game.status === 'final') {
-      const wagerNum = parseInt(wager);
-      if (isNaN(wagerNum) || wagerNum < 0 || wagerNum > 20) {
-        alert('Wager must be between 0 and 20');
+    
+    if (!isFinal) {
+      if (!selectedConfidence || selectedConfidence < 1 || selectedConfidence > 15) {
+        alert('Please select a confidence value');
         return;
       }
-      socket.emit('player:submitAnswer', {
-        gameCode,
-        teamName,
-        answer,
-        confidence: wagerNum
-      });
+      if (usedConfidences.includes(selectedConfidence)) {
+        alert('You have already used this confidence value');
+        return;
+      }
     } else {
-      if (!selectedConfidence) {
-        alert('Please select a confidence score');
+      if (selectedConfidence === null || selectedConfidence < 0 || selectedConfidence > 20) {
+        alert('Please select a wager between 0 and 20');
         return;
       }
-      if (team.usedConfidences.includes(selectedConfidence)) {
-        alert('You have already used this confidence score!');
-        return;
-      }
-      socket.emit('player:submitAnswer', {
-        gameCode,
-        teamName,
-        answer,
-        confidence: selectedConfidence
-      });
-      setTeam(prev => ({
-        ...prev,
-        usedConfidences: [...prev.usedConfidences, selectedConfidence]
-      }));
     }
+
+    socket.emit('player:submitAnswer', {
+      gameCode: gameCode.toUpperCase(),
+      teamName,
+      answerText: answer,
+      confidence: selectedConfidence
+    });
   };
 
-  return (
-    <div className="quizzler-player">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Paytone+One&family=Gabarito:wght@400;500;600;700&display=swap');
-        
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+  const getLeaderboard = () => {
+    return [...teams].sort((a, b) => b.score - a.score);
+  };
 
-        body {
-          font-family: 'Gabarito', sans-serif;
-          -webkit-font-smoothing: antialiased;
-        }
+  const getOrdinal = () => {
+    const leaderboard = getLeaderboard();
+    const index = leaderboard.findIndex(t => t.name === teamName);
+    if (index === -1) return '?';
+    const place = index + 1;
+    if (place === 1) return '1st';
+    if (place === 2) return '2nd';
+    if (place === 3) return '3rd';
+    return place + 'th';
+  };
 
-        .quizzler-player {
-          min-height: 100vh;
-          background: radial-gradient(ellipse at center, #FFFFCC 0%, #FFFF99 25%, #FFFF66 50%, #FFFF33 75%, #FFFF00 100%);
-          background-image: 
-            repeating-conic-gradient(
-              from 0deg at 50% 50%,
-              #FFFFEE 0deg 15deg,
-              #FFFF99 15deg 30deg
-            );
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 20px;
-        }
+  // Styles
+  const sunburstBg = {
+    background: 'radial-gradient(circle at center, #FFD700 0%, #FFA500 50%, #FF6B35 100%)'
+  };
 
-        .screen {
-          width: 100%;
-          max-width: 450px;
-          background: rgba(255, 255, 255, 0.95);
-          border-radius: 30px;
-          padding: 40px 30px;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-          text-align: center;
-        }
+  const orangeColor = '#FF6600';
+  const tealColor = '#286586';
+  const greenColor = '#00AA00';
+  const redColor = '#C60404';
+  const blueButton = '#32ADE6';
 
-        .logo {
-          font-family: 'Paytone One', sans-serif;
-          font-size: 48px;
-          color: #FF6600;
-          margin-bottom: 20px;
-          letter-spacing: 2px;
-        }
-
-        .icon {
-          width: 120px;
-          height: 120px;
-          margin: 0 auto 30px;
-        }
-
-        .icon-svg {
-          width: 100%;
-          height: 100%;
-        }
-
-        h2 {
-          color: #286586;
-          font-size: 28px;
-          font-weight: 600;
-          margin-bottom: 15px;
-        }
-
-        .event-info {
-          color: #286586;
-          font-size: 16px;
-          margin-bottom: 20px;
-          line-height: 1.5;
-        }
-
-        .team-name {
-          color: #286586;
-          font-size: 24px;
-          font-weight: 700;
-          margin-bottom: 15px;
-        }
-
-        .score-display {
-          color: #286586;
-          font-size: 18px;
-          font-weight: 600;
-          margin-bottom: 20px;
-        }
-
-        .score-value {
-          font-size: 32px;
-          color: #FF6600;
-        }
-
-        .input-field {
-          width: 100%;
-          padding: 15px;
-          font-size: 16px;
-          font-family: 'Gabarito', sans-serif;
-          border: 2px solid #286586;
-          border-radius: 10px;
-          margin-bottom: 15px;
-          text-align: center;
-        }
-
-        .input-field:focus {
-          outline: none;
-          border-color: #32ADE6;
-        }
-
-        .submit-button {
-          width: 100%;
-          max-width: 200px;
-          padding: 15px 30px;
-          background: #32ADE6;
-          color: #FFFFFF;
-          font-size: 18px;
-          font-weight: 600;
-          font-family: 'Gabarito', sans-serif;
-          border: none;
-          border-radius: 25px;
-          cursor: pointer;
-          transition: all 0.3s;
-          margin: 20px auto 0;
-          display: block;
-        }
-
-        .submit-button:hover {
-          background: #2894C7;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(50, 173, 230, 0.4);
-        }
-
-        .submit-button:active {
-          transform: translateY(0);
-        }
-
-        .question-header {
-          color: #286586;
-          font-size: 16px;
-          font-weight: 600;
-          margin-bottom: 10px;
-        }
-
-        .question-text {
-          color: #286586;
-          font-size: 20px;
-          font-weight: 500;
-          margin-bottom: 20px;
-          line-height: 1.4;
-        }
-
-        .confidence-label {
-          color: #286586;
-          font-size: 18px;
-          font-weight: 600;
-          margin: 25px 0 15px;
-        }
-
-        .confidence-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 10px;
-          margin-bottom: 20px;
-        }
-
-        .confidence-box {
-          aspect-ratio: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 20px;
-          font-weight: 600;
-          border: 1px solid #286586;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s;
-          background: white;
-          color: #286586;
-        }
-
-        .confidence-box:hover:not(.used):not(.selected) {
-          background: #E8F4F8;
-          border-width: 2px;
-        }
-
-        .confidence-box.selected {
-          background: #32ADE6;
-          color: white;
-          border: 3px solid #286586;
-          transform: scale(1.05);
-        }
-
-        .confidence-box.used {
-          background: #D3D3D3;
-          color: #888;
-          cursor: not-allowed;
-          border-color: #AAA;
-        }
-
-        .divider {
-          width: 100%;
-          height: 2px;
-          background: #286586;
-          margin: 30px 0;
-        }
-
-        .promo-space {
-          color: #286586;
-          font-size: 14px;
-          font-style: italic;
-          margin-top: 20px;
-        }
-
-        .feedback-icon {
-          font-size: 80px;
-          margin: 20px 0;
-        }
-
-        .correct-text {
-          color: #00AA00;
-          font-size: 36px;
-          font-weight: 700;
-          margin: 20px 0;
-        }
-
-        .incorrect-text {
-          color: #C60404;
-          font-size: 36px;
-          font-weight: 700;
-          margin: 20px 0;
-        }
-
-        .leaderboard {
-          text-align: left;
-          margin: 20px 0;
-          max-height: 400px;
-          overflow-y: auto;
-        }
-
-        .leaderboard-item {
-          color: #286586;
-          font-size: 16px;
-          padding: 8px 0;
-          border-bottom: 1px solid #E0E0E0;
-        }
-
-        .placement-text {
-          color: #286586;
-          font-size: 20px;
-          font-weight: 600;
-          margin-bottom: 20px;
-        }
-
-        .thank-you {
-          font-size: 24px;
-          color: #286586;
-          font-weight: 600;
-          margin: 30px 0;
-        }
-
-        .see-you {
-          font-size: 28px;
-          color: #286586;
-          font-weight: 700;
-          margin-top: 30px;
-        }
-
-        @media (max-width: 480px) {
-          .screen {
-            padding: 30px 20px;
-          }
+  // Join Screen
+  if (screen === 'join') {
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <div style={{ background: 'white', borderRadius: '20px', padding: '40px', maxWidth: '400px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
+          <h1 style={{ fontFamily: 'Paytone One', fontSize: '48px', color: orangeColor, textAlign: 'center', margin: '0 0 10px 0' }}>QUIZZLER</h1>
+          <p style={{ color: tealColor, textAlign: 'center', fontSize: '18px', marginBottom: '30px' }}>Join the Game</p>
           
-          .logo {
-            font-size: 36px;
-          }
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px' }}>Game Code</label>
+            <input
+              type="text"
+              placeholder="Enter code"
+              value={gameCode}
+              onChange={(e) => setGameCode(e.target.value.toUpperCase())}
+              maxLength={6}
+              style={{ width: '100%', padding: '15px', fontSize: '24px', textAlign: 'center', border: `2px solid ${tealColor}`, borderRadius: '10px', fontFamily: 'monospace', fontWeight: 'bold' }}
+            />
+          </div>
           
-          .confidence-grid {
-            gap: 8px;
-          }
+          <div style={{ marginBottom: '30px' }}>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px' }}>Team Name</label>
+            <input
+              type="text"
+              placeholder="Your team name"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              style={{ width: '100%', padding: '15px', fontSize: '18px', border: `2px solid ${tealColor}`, borderRadius: '10px' }}
+            />
+          </div>
           
-          .confidence-box {
-            font-size: 18px;
-          }
-        }
-      `}</style>
-
-      {screen === 'welcome' && (
-        <div className="screen">
-          <div className="logo">QUIZZLER</div>
-          <div className="icon">
-            <svg className="icon-svg" viewBox="0 0 200 200">
-              <circle cx="100" cy="40" r="20" fill="#FF6600"/>
-              <text x="100" y="50" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold">?</text>
-              <rect x="95" y="60" width="10" height="40" fill="#FF6600"/>
-              <ellipse cx="100" cy="120" rx="60" ry="10" fill="#FF6600" opacity="0.3"/>
-              <ellipse cx="100" cy="125" rx="50" ry="8" fill="#FF6600" opacity="0.4"/>
-              <ellipse cx="100" cy="130" rx="40" ry="6" fill="#FF6600" opacity="0.5"/>
-              <ellipse cx="100" cy="135" rx="30" ry="4" fill="#FF6600" opacity="0.6"/>
-            </svg>
-          </div>
-          <h2>Welcome!</h2>
-          <div className="event-info">
-            Trivia Night at<br/>
-            *venue*<br/>
-            *date*
-          </div>
-          <input
-            type="text"
-            className="input-field"
-            placeholder="ENTER TEAM NAME"
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-          />
-          <input
-            type="text"
-            className="input-field"
-            placeholder="ENTER GAME CODE"
-            value={gameCode}
-            onChange={(e) => setGameCode(e.target.value.toUpperCase())}
-            maxLength={6}
-            style={{ textTransform: 'uppercase' }}
-          />
-          <button className="submit-button" onClick={handleJoinGame}>
-            SUBMIT
-          </button>
-        </div>
-      )}
-
-      {screen === 'waiting' && (
-        <div className="screen">
-          <div className="logo">QUIZZLER</div>
-          <div className="event-info">
-            Trivia Night at<br/>
-            *venue*<br/>
-            *date*
-          </div>
-          <div className="team-name">*{teamName}*</div>
-          <h2>Waiting for Host<br/>to start game</h2>
-          <div className="divider"></div>
-          <div className="promo-space">
-            *promo space for venue<br/>drink specials*
-          </div>
-        </div>
-      )}
-
-      {screen === 'question' && currentQuestion && (
-        <div className="screen">
-          <div className="logo">QUIZZLER</div>
-          <div className="team-name">*{teamName}*</div>
-          <div className="question-header">QUESTION {currentQuestion.number}</div>
-          <div className="question-text">{currentQuestion.text}</div>
-          <input
-            type="text"
-            className="input-field"
-            placeholder="Your answer"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-          />
-          <div className="confidence-label">CONFIDENCE SCORE</div>
-          <div className="confidence-grid">
-            {Array.from({ length: 15 }, (_, i) => i + 1).map(num => (
-              <div
-                key={num}
-                className={`confidence-box ${
-                  team?.usedConfidences.includes(num) ? 'used' : ''
-                } ${selectedConfidence === num ? 'selected' : ''}`}
-                onClick={() => {
-                  if (!team?.usedConfidences.includes(num)) {
-                    setSelectedConfidence(num);
-                  }
-                }}
-              >
-                {num}
-              </div>
-            ))}
-          </div>
-          <button className="submit-button" onClick={handleSubmitAnswer}>
-            SUBMIT
-          </button>
-        </div>
-      )}
-
-      {screen === 'answerSubmitted' && (
-        <div className="screen">
-          <div className="logo">QUIZZLER</div>
-          <div className="team-name">*{teamName}*</div>
-          <div className="score-display">
-            CURRENT SCORE<br/>
-            <span className="score-value">*{team?.score || 0}*</span>
-          </div>
-          <h2>Answer sent.<br/>Waiting for host.</h2>
-          <div className="divider"></div>
-          <div className="promo-space">
-            *promo space for venue<br/>drink specials*
-          </div>
-        </div>
-      )}
-
-      {screen === 'correct' && (
-        <div className="screen">
-          <div className="logo">QUIZZLER</div>
-          <div className="team-name">*{teamName}*</div>
-          <div className="score-display">
-            CURRENT SCORE<br/>
-            <span className="score-value">*{team?.score || 0}*</span>
-          </div>
-          <div className="event-info">
-            *Q{currentQuestion?.number}*<br/>
-            *{currentQuestion?.text}*<br/>
-            *correct answer*
-          </div>
-          <div className="correct-text">CORRECT!</div>
-          <div className="feedback-icon">✓</div>
-        </div>
-      )}
-
-      {screen === 'incorrect' && (
-        <div className="screen">
-          <div className="logo">QUIZZLER</div>
-          <div className="team-name">*{teamName}*</div>
-          <div className="score-display">
-            CURRENT SCORE<br/>
-            <span className="score-value">*{team?.score || 0}*</span>
-          </div>
-          <div className="event-info">
-            *Q{currentQuestion?.number}*<br/>
-            *{currentQuestion?.text}*<br/>
-            *correct answer*
-          </div>
-          <div className="incorrect-text">INCORRECT</div>
-          <div className="feedback-icon" style={{ color: '#C60404' }}>✗</div>
-        </div>
-      )}
-
-      {screen === 'finalQuestion' && (
-        <div className="screen">
-          <div className="logo">QUIZZLER</div>
-          <div className="team-name">*{teamName}*</div>
-          <h2>FINAL QUESTION</h2>
-          <div className="question-text">{currentQuestion?.text}</div>
-          <input
-            type="text"
-            className="input-field"
-            placeholder="Your answer"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-          />
-          <div className="confidence-label">WAGER 1-20</div>
-          <input
-            type="number"
-            className="input-field"
-            placeholder="Enter wager (0-20)"
-            value={wager}
-            onChange={(e) => setWager(e.target.value)}
-            min="0"
-            max="20"
-          />
-          <button className="submit-button" onClick={handleSubmitAnswer}>
-            SUBMIT
-          </button>
-        </div>
-      )}
-
-      {screen === 'gameComplete' && (
-        <div className="screen">
-          <div className="logo" style={{ fontSize: '56px' }}>QUIZZLER</div>
-          <div className="team-name">*{teamName}*</div>
-          <div className="placement-text">
-            Your team finished in<br/>
-            *{getPlacement(game?.leaderboard, teamName)}* place!
-          </div>
-          <div className="confidence-label">FINAL SCORES</div>
-          <div className="leaderboard">
-            {game?.leaderboard?.map((t, idx) => (
-              <div key={idx} className="leaderboard-item">
-                {idx + 1}. {t.name}
-              </div>
-            ))}
-          </div>
-          <button 
-            className="submit-button" 
-            onClick={() => setScreen('thankYou')}
-            style={{ marginTop: '30px' }}
+          <button
+            onClick={joinGame}
+            style={{ width: '100%', padding: '18px', fontSize: '20px', fontWeight: 'bold', background: blueButton, color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
           >
-            CONTINUE
+            Join Game
           </button>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {screen === 'thankYou' && (
-        <div className="screen">
-          <div className="logo">QUIZZLER</div>
-          <div className="icon">
-            <svg className="icon-svg" viewBox="0 0 200 200">
-              <circle cx="100" cy="40" r="20" fill="#FF6600"/>
-              <text x="100" y="50" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold">?</text>
-              <rect x="95" y="60" width="10" height="40" fill="#FF6600"/>
-              <ellipse cx="100" cy="120" rx="60" ry="10" fill="#FF6600" opacity="0.3"/>
-              <ellipse cx="100" cy="125" rx="50" ry="8" fill="#FF6600" opacity="0.4"/>
-              <ellipse cx="100" cy="130" rx="40" ry="6" fill="#FF6600" opacity="0.5"/>
-              <ellipse cx="100" cy="135" rx="30" ry="4" fill="#FF6600" opacity="0.6"/>
-            </svg>
+  // Waiting Screen
+  if (screen === 'waiting') {
+    const leaderboard = getLeaderboard();
+    const myScore = teams.find(t => t.name === teamName)?.score || 0;
+
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ color: orangeColor, fontSize: '28px', margin: '0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+                <p style={{ color: tealColor, margin: '5px 0 0 0' }}>Game: <strong>{gameCode}</strong></p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '14px', color: tealColor }}>Your Score</div>
+                <div style={{ fontSize: '36px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+                <div style={{ fontSize: '14px', color: tealColor }}>{getOrdinal()} Place</div>
+              </div>
+            </div>
           </div>
-          <div className="thank-you">
-            THANK YOU FOR<br/>PLAYING
+
+          {/* Waiting Message */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏳</div>
+            <h2 style={{ color: tealColor, fontSize: '24px', marginBottom: '10px' }}>Waiting for Next Question...</h2>
+            <p style={{ color: '#666', fontSize: '16px' }}>The host will push the question when ready</p>
           </div>
-          <div className="event-info">
-            Trivia Night at<br/>
-            *venue*<br/>
-            *date*
+
+          {/* Leaderboard */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ color: tealColor, fontSize: '20px', marginBottom: '15px' }}>🏆 Leaderboard</h3>
+            {leaderboard.map((team, idx) => (
+              <div key={team.name} style={{ 
+                background: team.name === teamName ? '#FFF3E0' : '#f5f5f5', 
+                padding: '15px', 
+                borderRadius: '10px', 
+                marginBottom: '10px',
+                border: team.name === teamName ? `3px solid ${orangeColor}` : 'none',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#999' }}>#{idx + 1}</span>
+                  <span style={{ fontSize: '18px', fontWeight: team.name === teamName ? 'bold' : 'normal', color: tealColor }}>{team.name}</span>
+                </div>
+                <span style={{ fontSize: '24px', fontWeight: 'bold', color: orangeColor }}>{team.score}</span>
+              </div>
+            ))}
           </div>
-          <div className="see-you">SEE YOU NEXT WEEK!</div>
         </div>
-      )}
-    </div>
-  );
-}
+      </div>
+    );
+  }
 
-function getPlacement(leaderboard, teamName) {
-  if (!leaderboard) return '?';
-  const index = leaderboard.findIndex(t => t.name === teamName);
-  if (index === -1) return '?';
-  const place = index + 1;
-  if (place === 1) return '1st';
-  if (place === 2) return '2nd';
-  if (place === 3) return '3rd';
-  return place + 'th';
+  // Question Screen
+  if (screen === 'question' && !submitted) {
+    const myScore = teams.find(t => t.name === teamName)?.score || 0;
+    const confidenceOptions = isFinal 
+      ? Array.from({ length: 21 }, (_, i) => i)
+      : Array.from({ length: 15 }, (_, i) => i + 1);
+
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION!' : `Question ${questionNumber}`}</div>
+                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Question */}
+          <div style={{ background: isFinal ? '#FFF9C4' : 'white', border: isFinal ? `4px solid ${orangeColor}` : 'none', borderRadius: '15px', padding: '30px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <p style={{ fontSize: '22px', fontWeight: 'bold', color: tealColor, textAlign: 'center', margin: 0 }}>{currentQuestion}</p>
+          </div>
+
+          {/* Answer Input */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px' }}>Your Answer</label>
+            <textarea
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="Type your answer here..."
+              style={{ width: '100%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '80px', resize: 'vertical' }}
+            />
+          </div>
+
+          {/* Confidence Grid */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '15px', fontSize: '18px' }}>
+              {isFinal ? 'Wager (0-20 points)' : 'Confidence (1-15, each used once)'}
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
+              {confidenceOptions.map(num => {
+                const isUsed = !isFinal && usedConfidences.includes(num);
+                const isSelected = selectedConfidence === num;
+                return (
+                  <button
+                    key={num}
+                    onClick={() => !isUsed && setSelectedConfidence(num)}
+                    disabled={isUsed}
+                    style={{
+                      padding: '20px',
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      border: isSelected ? `3px solid ${orangeColor}` : '2px solid #ddd',
+                      borderRadius: '10px',
+                      background: isUsed ? '#e0e0e0' : isSelected ? '#FFE0B2' : 'white',
+                      color: isUsed ? '#999' : tealColor,
+                      cursor: isUsed ? 'not-allowed' : 'pointer',
+                      textDecoration: isUsed ? 'line-through' : 'none'
+                    }}
+                  >
+                    {num}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            onClick={submitAnswer}
+            style={{ width: '100%', padding: '20px', fontSize: '22px', fontWeight: 'bold', background: blueButton, color: 'white', border: 'none', borderRadius: '15px', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}
+          >
+            Submit Answer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Submitted Screen
+  if (screen === 'question' && submitted) {
+    const myScore = teams.find(t => t.name === teamName)?.score || 0;
+
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION' : `Question ${questionNumber}`}</div>
+                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Submitted Message */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ fontSize: '80px', marginBottom: '20px', color: greenColor }}>✓</div>
+            <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Paytone One' }}>Answer Submitted!</h2>
+            <p style={{ color: '#666', fontSize: '18px', marginBottom: '25px' }}>Waiting for host to mark answers...</p>
+            
+            <div style={{ background: '#f5f5f5', borderRadius: '10px', padding: '20px', marginTop: '20px' }}>
+              <div style={{ fontSize: '14px', color: tealColor, marginBottom: '5px' }}>
+                Your {isFinal ? 'Wager' : 'Confidence'}
+              </div>
+              <div style={{ fontSize: '48px', fontWeight: 'bold', color: orangeColor }}>{selectedConfidence}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Game Complete
+  if (screen === 'completed') {
+    const leaderboard = getLeaderboard();
+
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ maxWidth: '600px', width: '100%' }}>
+          <div style={{ background: 'white', borderRadius: '20px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+              <div style={{ fontSize: '80px', marginBottom: '10px' }}>🏆</div>
+              <h1 style={{ fontFamily: 'Paytone One', fontSize: '42px', color: orangeColor, margin: '0 0 10px 0' }}>Game Over!</h1>
+              <p style={{ color: tealColor, fontSize: '20px' }}>Final Results</p>
+            </div>
+
+            <div>
+              {leaderboard.map((team, idx) => {
+                const isWinner = idx === 0;
+                const isMyTeam = team.name === teamName;
+                
+                return (
+                  <div key={team.name} style={{ 
+                    background: isWinner ? '#FFF9C4' : isMyTeam ? '#E3F2FD' : '#f5f5f5',
+                    border: isWinner ? `4px solid ${orangeColor}` : isMyTeam ? `3px solid ${tealColor}` : 'none',
+                    padding: '20px',
+                    borderRadius: '15px',
+                    marginBottom: '15px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                      {isWinner && <span style={{ fontSize: '40px' }}>👑</span>}
+                      <div>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold', color: tealColor }}>{team.name}</div>
+                        {isWinner && <div style={{ color: orangeColor, fontWeight: 'bold' }}>WINNER!</div>}
+                        {isMyTeam && !isWinner && <div style={{ color: tealColor, fontWeight: 'bold' }}>Your Team</div>}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '36px', fontWeight: 'bold', color: orangeColor }}>{team.score}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '30px', color: '#666', fontSize: '16px' }}>
+              Thanks for playing Quizzler!
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
