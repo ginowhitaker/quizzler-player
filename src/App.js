@@ -63,7 +63,6 @@ export default function PlayerApp() {
       setAnswer('');
       setSelectedConfidence(null);
       setSubmitted(false);
-      setWasCorrect(null);
       setScreen('question');
     });
 
