@@ -99,19 +99,6 @@ export default function PlayerApp() {
   });
 });
 
-// Auto-transition from result screen back to waiting
-useEffect(() => {
-  if (answerResult) {
-    const timer = setTimeout(() => {
-      setAnswerResult(null);
-      setSubmitted(false);
-      setScreen('waiting');
-    }, 3000);
-    
-    return () => clearTimeout(timer);
-  }
-}, [answerResult]);
-
     socket.on('player:gameCompleted', (data) => {
       setTeams(data.teams);
       setScreen('completed');
@@ -125,6 +112,30 @@ useEffect(() => {
       socket.off('player:gameCompleted');
     };
   }, [socket, teamName, isFinal, selectedConfidence]);
+
+return () => {
+      socket.off('player:joined');
+      socket.off('player:questionReceived');
+      socket.off('player:answerSubmitted');
+      socket.off('player:scoresUpdated');
+      socket.off('player:gameCompleted');
+    };
+  }, [socket, teamName, isFinal, selectedConfidence]);
+
+  // Auto-transition from result screen back to waiting
+  useEffect(() => {
+    if (answerResult) {
+      const timer = setTimeout(() => {
+        setAnswerResult(null);
+        setSubmitted(false);
+        setScreen('waiting');
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [answerResult]);
+
+  const joinGame = () => {
 
   const joinGame = () => {
     if (!gameCode || !teamName) {
