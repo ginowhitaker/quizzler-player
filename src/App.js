@@ -17,7 +17,6 @@ export default function PlayerApp() {
   const [usedConfidences, setUsedConfidences] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [answerResult, setAnswerResult] = useState(null); // null, 'correct', or 'incorrect'
-  const [wasCorrect, setWasCorrect] = useState(null);
 
   useEffect(() => {
     const newSocket = io(BACKEND_URL, {
@@ -75,29 +74,9 @@ export default function PlayerApp() {
       }
     });
 
- socket.on('player:scoresUpdated', (data) => {
-  console.log('Scores updated:', data);
-  console.log('Current submitted state:', submitted);
-  
-  setTeams(prev => {
-    const previousScore = prev.find(t => t.name === teamName)?.score || 0;
-    const newScore = data.teams.find(t => t.name === teamName)?.score || 0;
-    
-    console.log('Previous score:', previousScore, 'New score:', newScore);
-    
-    // If we just submitted an answer, determine if correct/incorrect
-    if (submitted) {
-      console.log('Setting answer result...');
-      if (isFinal) {
-        setAnswerResult(newScore > previousScore ? 'correct' : 'incorrect');
-      } else {
-        setAnswerResult(newScore > previousScore ? 'correct' : 'incorrect');
-      }
-    }
-    
-    return data.teams;
-  });
-});
+    socket.on('player:scoresUpdated', (data) => {
+      setTeams(data.teams);
+    });
 
     socket.on('player:gameCompleted', (data) => {
       setTeams(data.teams);
@@ -112,30 +91,6 @@ export default function PlayerApp() {
       socket.off('player:gameCompleted');
     };
   }, [socket, teamName, isFinal, selectedConfidence]);
-
-return () => {
-      socket.off('player:joined');
-      socket.off('player:questionReceived');
-      socket.off('player:answerSubmitted');
-      socket.off('player:scoresUpdated');
-      socket.off('player:gameCompleted');
-    };
-  }, [socket, teamName, isFinal, selectedConfidence]);
-
-  // Auto-transition from result screen back to waiting
-  useEffect(() => {
-    if (answerResult) {
-      const timer = setTimeout(() => {
-        setAnswerResult(null);
-        setSubmitted(false);
-        setScreen('waiting');
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [answerResult]);
-
-  const joinGame = () => {
 
   const joinGame = () => {
     if (!gameCode || !teamName) {
@@ -176,6 +131,11 @@ return () => {
       answerText: answer,
       confidence: selectedConfidence
     });
+    
+    // Update used confidences locally
+    if (!isFinal) {
+      setUsedConfidences(prev => [...prev, selectedConfidence]);
+    }
   };
 
   const getLeaderboard = () => {
