@@ -77,15 +77,15 @@ socket.on('player:answerSubmitted', () => {
 });
 
     socket.on('player:scoresUpdated', (data) => {
-  setTeams(prev => {
-    const previousScore = prev.find(t => t.name === teamName)?.score || 0;
-    const newScore = data.teams.find(t => t.name === teamName)?.score || 0;
-    
-    // Check ref instead of state
-    if (submittedRef.current) {
-      setAnswerResult(newScore > previousScore ? 'correct' : 'incorrect');
-      submittedRef.current = false; // Reset for next question
-    }
+  setTeams(data.teams);
+});
+
+socket.on('player:answerMarked', (data) => {
+  if (submittedRef.current) {
+    setAnswerResult(data.correct ? 'correct' : 'incorrect');
+    submittedRef.current = false;
+  }
+});
     
     return data.teams;
   });
@@ -115,6 +115,7 @@ socket.on('player:finalQuestionReceived', (data) => {
       socket.off('player:joined');
       socket.off('player:questionReceived');
       socket.off('player:answerSubmitted');
+      socket.off('player:answerMarked');
       socket.off('player:scoresUpdated');
       socket.off('player:gameCompleted');
       socket.off('player:finalCategoryReceived');
