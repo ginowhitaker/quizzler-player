@@ -75,30 +75,42 @@ export default function PlayerApp() {
       }
     });
 
-    socket.on('player:scoresUpdated', (data) => {
-  const previousScore = teams.find(t => t.name === teamName)?.score || 0;
-  setTeams(data.teams);
-  const newScore = data.teams.find(t => t.name === teamName)?.score || 0;
+ socket.on('player:scoresUpdated', (data) => {
+  console.log('Scores updated:', data);
+  console.log('Current submitted state:', submitted);
   
-  // If submitted, show result based on score change
-  if (submitted) {
-    if (isFinal) {
-      // Final question: score always changes (+ or -)
-      const scoreIncrease = newScore > previousScore;
-      setAnswerResult(scoreIncrease ? 'correct' : 'incorrect');
-    } else {
-      // Regular question: score increases = correct, no change = incorrect
-      setAnswerResult(newScore > previousScore ? 'correct' : 'incorrect');
+  setTeams(prev => {
+    const previousScore = prev.find(t => t.name === teamName)?.score || 0;
+    const newScore = data.teams.find(t => t.name === teamName)?.score || 0;
+    
+    console.log('Previous score:', previousScore, 'New score:', newScore);
+    
+    // If we just submitted an answer, determine if correct/incorrect
+    if (submitted) {
+      console.log('Setting answer result...');
+      if (isFinal) {
+        setAnswerResult(newScore > previousScore ? 'correct' : 'incorrect');
+      } else {
+        setAnswerResult(newScore > previousScore ? 'correct' : 'incorrect');
+      }
     }
     
-    // Return to waiting after 3 seconds
-    setTimeout(() => {
+    return data.teams;
+  });
+});
+
+// Auto-transition from result screen back to waiting
+useEffect(() => {
+  if (answerResult) {
+    const timer = setTimeout(() => {
       setAnswerResult(null);
       setSubmitted(false);
       setScreen('waiting');
     }, 3000);
+    
+    return () => clearTimeout(timer);
   }
-});
+}, [answerResult]);
 
     socket.on('player:gameCompleted', (data) => {
       setTeams(data.teams);
