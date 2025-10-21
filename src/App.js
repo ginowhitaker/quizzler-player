@@ -76,8 +76,29 @@ export default function PlayerApp() {
     });
 
     socket.on('player:scoresUpdated', (data) => {
-      setTeams(data.teams);
-    });
+  const previousScore = teams.find(t => t.name === teamName)?.score || 0;
+  setTeams(data.teams);
+  const newScore = data.teams.find(t => t.name === teamName)?.score || 0;
+  
+  // If submitted, show result based on score change
+  if (submitted) {
+    if (isFinal) {
+      // Final question: score always changes (+ or -)
+      const scoreIncrease = newScore > previousScore;
+      setAnswerResult(scoreIncrease ? 'correct' : 'incorrect');
+    } else {
+      // Regular question: score increases = correct, no change = incorrect
+      setAnswerResult(newScore > previousScore ? 'correct' : 'incorrect');
+    }
+    
+    // Return to waiting after 3 seconds
+    setTimeout(() => {
+      setAnswerResult(null);
+      setSubmitted(false);
+      setScreen('waiting');
+    }, 3000);
+  }
+});
 
     socket.on('player:gameCompleted', (data) => {
       setTeams(data.teams);
