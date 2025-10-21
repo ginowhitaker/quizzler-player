@@ -16,6 +16,7 @@ export default function PlayerApp() {
   const [selectedConfidence, setSelectedConfidence] = useState(null);
   const [usedConfidences, setUsedConfidences] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+  const [answerResult, setAnswerResult] = useState(null); // null, 'correct', or 'incorrect'
   const [wasCorrect, setWasCorrect] = useState(null);
 
   useEffect(() => {
@@ -347,6 +348,44 @@ export default function PlayerApp() {
   if (screen === 'question' && submitted) {
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
 
+    // Show result if answer was marked
+    if (answerResult) {
+      const isCorrect = answerResult === 'correct';
+      return (
+        <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION' : `Question ${questionNumber}`}</div>
+                  <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
+                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Result Message */}
+            <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <div style={{ fontSize: '80px', marginBottom: '20px', color: isCorrect ? greenColor : redColor }}>
+                {isCorrect ? '✓' : '✗'}
+              </div>
+              <h2 style={{ color: isCorrect ? greenColor : redColor, fontSize: '32px', marginBottom: '15px', fontFamily: 'Paytone One' }}>
+                {isCorrect ? 'Correct!' : 'Incorrect'}
+              </h2>
+              <p style={{ color: '#666', fontSize: '18px' }}>
+                {isCorrect ? `+${selectedConfidence} points` : isFinal ? `-${selectedConfidence} points` : 'No points'}
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Just submitted, waiting for host to mark
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -366,9 +405,8 @@ export default function PlayerApp() {
 
           {/* Submitted Message */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <div style={{ fontSize: '80px', marginBottom: '20px', color: greenColor }}>✓</div>
-            <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Paytone One' }}>Answer Submitted!</h2>
-            <p style={{ color: '#666', fontSize: '18px', marginBottom: '25px' }}>Waiting for host to mark answers...</p>
+            <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Paytone One' }}>Answer Submitted</h2>
+            <p style={{ color: '#666', fontSize: '18px', marginBottom: '25px' }}>Waiting for host to review...</p>
             
             <div style={{ background: '#f5f5f5', borderRadius: '10px', padding: '20px', marginTop: '20px' }}>
               <div style={{ fontSize: '14px', color: tealColor, marginBottom: '5px' }}>
