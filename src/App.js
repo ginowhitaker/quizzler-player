@@ -12,6 +12,9 @@ export default function PlayerApp() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [questionNumber, setQuestionNumber] = useState(0);
   const [isFinal, setIsFinal] = useState(false);
+const [finalCategory, setFinalCategory] = useState('');
+const [wager, setWager] = useState(0);
+const [wagerSubmitted, setWagerSubmitted] = useState(false);
   const [answer, setAnswer] = useState('');
   const [selectedConfidence, setSelectedConfidence] = useState(null);
   const [usedConfidences, setUsedConfidences] = useState([]);
@@ -93,13 +96,29 @@ socket.on('player:answerSubmitted', () => {
       setTeams(data.teams);
       setScreen('completed');
     });
+socket.on('player:finalCategoryReceived', (data) => {
+  setFinalCategory(data.category);
+  setWager(0);
+  setWagerSubmitted(false);
+  setScreen('finalWager');
+});
 
+socket.on('player:finalQuestionReceived', (data) => {
+  setCurrentQuestion(data.question);
+  setIsFinal(true);
+  setAnswer('');
+  setSubmitted(false);
+  setAnswerResult(null);
+  setScreen('question');
+});
     return () => {
       socket.off('player:joined');
       socket.off('player:questionReceived');
       socket.off('player:answerSubmitted');
       socket.off('player:scoresUpdated');
       socket.off('player:gameCompleted');
+      socket.off('player:finalCategoryReceived');
+      socket.off('player:finalQuestionReceived');
     };
   }, [socket, teamName, isFinal, selectedConfidence]);
 
@@ -147,6 +166,22 @@ socket.on('player:answerSubmitted', () => {
     if (!isFinal) {
       setUsedConfidences(prev => [...prev, selectedConfidence]);
     }
+  };
+
+const submitWager = () => {
+    if (wager < 0 || wager > 20) {
+      alert('Wager must be between 0 and 20 points');
+      return;
+    }
+    
+    setSelectedConfidence(wager);
+    setWagerSubmitted(true);
+    
+    socket.emit('player:wagerSubmitted', {
+      gameCode: gameCode.toUpperCase(),
+      teamName,
+      wager
+    });
   };
 
   const getLeaderboard = () => {
@@ -273,7 +308,69 @@ socket.on('player:answerSubmitted', () => {
       </div>
     );
   }
+// Final Wager Screen
+  if (screen === 'finalWager') {
+    const myScore = teams.find(t => t.name === teamName)?.score || 0;
 
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '14px', color: tealColor }}>FINAL QUESTION</div>
+                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '14px', color: tealColor }}>Current Score</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Display */}
+          <div style={{ background: '#FFF9C4', border: `4px solid ${orangeColor}`, borderRadius: '15px', padding: '40px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', textAlign: 'center' }}>
+            <div style={{ fontSize: '18px', color: tealColor, marginBottom: '10px' }}>Category</div>
+            <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: orangeColor, margin: 0, fontFamily: 'Paytone One' }}>{finalCategory}</h2>
+          </div>
+
+          {!wagerSubmitted ? (
+            <div style={{ background: 'white', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <h3 style={{ color: tealColor, fontSize: '22px', marginBottom: '20px', textAlign: 'center' }}>How confident are you?</h3>
+              <p style={{ color: '#666', textAlign: 'center', marginBottom: '20px' }}>Wager up to 20 points!</p>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px' }}>Your Wager</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="20"
+                  value={wager}
+                  onChange={(e) => setWager(parseInt(e.target.value) || 0)}
+                  style={{ width: '100%', padding: '20px', fontSize: '32px', textAlign: 'center', border: `3px solid ${tealColor}`, borderRadius: '10px', fontWeight: 'bold' }}
+                />
+              </div>
+
+              <button
+                onClick={submitWager}
+                style={{ width: '100%', padding: '20px', fontSize: '24px', fontWeight: 'bold', background: blueButton, color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+              >
+                Submit Wager: {wager} Points
+              </button>
+            </div>
+          ) : (
+            <div style={{ background: '#C8E6C9', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <div style={{ fontSize: '48px', marginBottom: '15px' }}>✓</div>
+              <h3 style={{ color: '#2E7D32', fontSize: '24px', marginBottom: '10px' }}>Wager Submitted!</h3>
+              <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#2E7D32', marginBottom: '10px' }}>{wager} Points</p>
+              <p style={{ color: '#666', fontSize: '16px' }}>Waiting for the question to be revealed...</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
   // Question Screen
   if (screen === 'question' && !submitted) {
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
