@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://quizzler-production.up.railway.app';
@@ -17,6 +17,7 @@ export default function PlayerApp() {
   const [usedConfidences, setUsedConfidences] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [answerResult, setAnswerResult] = useState(null); // null, 'correct', or 'incorrect'
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     const newSocket = io(BACKEND_URL, {
@@ -66,16 +67,26 @@ export default function PlayerApp() {
       setScreen('question');
     });
 
-    socket.on('player:answerSubmitted', () => {
-      setSubmitted(true);
-      if (!isFinal && selectedConfidence) {
-        setUsedConfidences(prev => [...prev, selectedConfidence]);
-      }
-    });
+socket.on('player:answerSubmitted', () => {
+  setSubmitted(true);
+  submittedRef.current = true;
+});
 
     socket.on('player:scoresUpdated', (data) => {
-      setTeams(data.teams);
-    });
+  setTeams(prev => {
+    const previousScore = prev.find(t => t.name === teamName)?.score || 0;
+    const newScore = data.teams.find(t => t.name === teamName)?.score || 0;
+    
+    // Check ref instead of state
+    if (submittedRef.current) {
+      setAnswerResult(newScore > previousScore ? 'correct' : 'incorrect');
+      submittedRef.current = false; // Reset for next question
+    }
+    
+    return data.teams;
+  });
+});
+
 
     socket.on('player:gameCompleted', (data) => {
       setTeams(data.teams);
