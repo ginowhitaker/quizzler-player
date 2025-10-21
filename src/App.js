@@ -102,10 +102,12 @@ socket.on('player:finalQuestionReceived', (data) => {
   setCurrentQuestion(data.question);
   setIsFinal(true);
   setAnswer('');
+  setSelectedConfidence(wager); // Use submitted wager
   setSubmitted(false);
   setAnswerResult(null);
   setScreen('question');
 });
+
     return () => {
       socket.off('player:joined');
       socket.off('player:questionReceived');
@@ -414,29 +416,31 @@ const submitWager = () => {
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
               {confidenceOptions.map(num => {
-                const isUsed = !isFinal && usedConfidences.includes(num);
-                const isSelected = selectedConfidence === num;
-                return (
-                  <button
-                    key={num}
-                    onClick={() => !isUsed && setSelectedConfidence(num)}
-                    disabled={isUsed}
-                    style={{
-                      padding: '20px',
-                      fontSize: '20px',
-                      fontWeight: 'bold',
-                      border: isSelected ? `3px solid ${orangeColor}` : '2px solid #ddd',
-                      borderRadius: '10px',
-                      background: isUsed ? '#e0e0e0' : isSelected ? '#FFE0B2' : 'white',
-                      color: isUsed ? '#999' : tealColor,
-                      cursor: isUsed ? 'not-allowed' : 'pointer',
-                      textDecoration: isUsed ? 'line-through' : 'none'
-                    }}
-                  >
-                    {num}
-                  </button>
-                );
-              })}
+  const isUsed = !isFinal && usedConfidences.includes(num);
+  const isSelected = selectedConfidence === num;
+  const isDisabled = isUsed || isFinal; // All buttons disabled for final
+  
+  return (
+    <button
+      key={num}
+      onClick={() => !isDisabled && setSelectedConfidence(num)}
+      disabled={isDisabled}
+      style={{
+        padding: '20px',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        border: isSelected ? `3px solid ${orangeColor}` : '2px solid #ddd',
+        borderRadius: '10px',
+        background: isUsed ? '#e0e0e0' : isSelected ? '#FFE0B2' : 'white',
+        color: isUsed ? '#999' : tealColor,
+        cursor: isDisabled ? 'not-allowed' : 'pointer',
+        textDecoration: isUsed ? 'line-through' : 'none'
+      }}
+    >
+      {num}
+    </button>
+  );
+})}
             </div>
           </div>
 
