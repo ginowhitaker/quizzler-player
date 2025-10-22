@@ -71,9 +71,12 @@ const [wagerSubmitted, setWagerSubmitted] = useState(false);
       setScreen('question');
     });
 
-socket.on('player:answerSubmitted', () => {
-  setSubmitted(true);
-  submittedRef.current = true;
+socket.on('player:answerMarked', (data) => {
+  if (submittedRef.current) {
+    setAnswerResult(data.correct ? 'correct' : 'incorrect');
+    submittedRef.current = false;
+    setScreen('results'); // Go to results screen instead of waiting
+  }
 });
 
     socket.on('player:scoresUpdated', (data) => {
@@ -84,6 +87,7 @@ socket.on('player:answerMarked', (data) => {
   if (submittedRef.current) {
     setAnswerResult(data.correct ? 'correct' : 'incorrect');
     submittedRef.current = false;
+    setScreen('results'); // ADD THIS LINE
   }
 });
 
@@ -532,6 +536,75 @@ const submitWager = () => {
     );
   }
 
+// Results Screen - Show after scoring
+if (screen === 'results') {
+  const myScore = teams.find(t => t.name === teamName)?.score || 0;
+  const pointsEarned = answerResult === 'correct' ? selectedConfidence : 0;
+  
+  return (
+    <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '14px', color: tealColor }}>Question {questionNumber}</div>
+              <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
+              <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Result Banner */}
+        <div style={{ 
+          background: answerResult === 'correct' ? '#C8E6C9' : '#FFCDD2', 
+          border: `4px solid ${answerResult === 'correct' ? '#4CAF50' : '#F44336'}`,
+          borderRadius: '15px', 
+          padding: '30px', 
+          marginBottom: '20px', 
+          textAlign: 'center',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>
+            {answerResult === 'correct' ? '✓' : '✗'}
+          </div>
+          <h2 style={{ 
+            fontSize: '28px', 
+            margin: '0 0 10px 0', 
+            color: answerResult === 'correct' ? '#2E7D32' : '#C62828',
+            fontFamily: 'Paytone One'
+          }}>
+            {answerResult === 'correct' ? 'CORRECT!' : 'INCORRECT'}
+          </h2>
+          <p style={{ fontSize: '20px', margin: 0, color: answerResult === 'correct' ? '#2E7D32' : '#C62828' }}>
+            {answerResult === 'correct' ? `+${pointsEarned} points` : `+0 points`}
+          </p>
+        </div>
+
+        {/* Question */}
+        <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+          <div style={{ fontSize: '14px', color: tealColor, marginBottom: '10px', fontWeight: 'bold' }}>Question:</div>
+          <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{currentQuestion}</p>
+        </div>
+
+        {/* Your Answer */}
+        <div style={{ background: '#FFF3E0', borderRadius: '15px', padding: '20px', marginBottom: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+          <div style={{ fontSize: '14px', color: orangeColor, marginBottom: '10px', fontWeight: 'bold' }}>Your Answer:</div>
+          <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{answer}</p>
+        </div>
+
+        {/* Waiting Message */}
+        <div style={{ background: 'white', borderRadius: '15px', padding: '30px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+          <div style={{ fontSize: '48px', marginBottom: '15px' }}>⏳</div>
+          <p style={{ color: tealColor, fontSize: '18px', margin: 0 }}>Waiting for next question...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
   // Game Complete
   if (screen === 'completed') {
     const leaderboard = getLeaderboard();
