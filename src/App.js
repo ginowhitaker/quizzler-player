@@ -207,8 +207,12 @@ const submitWager = () => {
 
   // Styles
   const sunburstBg = {
-    background: 'radial-gradient(circle at center, #FFD700 0%, #FFA500 50%, #FF6B35 100%)'
-  };
+  backgroundImage: 'url(https://quizzler.pro/img/quizzler-background.png)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundAttachment: 'fixed'
+};
 
   const orangeColor = '#FF6600';
   const tealColor = '#286586';
@@ -220,8 +224,12 @@ const submitWager = () => {
   if (screen === 'join') {
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
-        <div style={{ background: 'white', borderRadius: '20px', padding: '40px', maxWidth: '400px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
-          <h1 style={{ fontFamily: 'Paytone One', fontSize: '48px', color: orangeColor, textAlign: 'center', margin: '0 0 10px 0' }}>QUIZZLER</h1>
+        <div style={{ background: 'white', borderRadius: '20px', padding: '30px', maxWidth: '450px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
+         <img 
+  src="https://quizzler.pro/img/quizzler_logo.png" 
+  alt="Quizzler" 
+  style={{ height: '80px', width: 'auto', display: 'block', margin: '0 auto 10px' }}
+/>
           <p style={{ color: tealColor, textAlign: 'center', fontSize: '18px', marginBottom: '30px' }}>Join the Game</p>
           
           <div style={{ marginBottom: '20px' }}>
@@ -232,7 +240,7 @@ const submitWager = () => {
               value={gameCode}
               onChange={(e) => setGameCode(e.target.value.toUpperCase())}
               maxLength={6}
-              style={{ width: '100%', padding: '15px', fontSize: '24px', textAlign: 'center', border: `2px solid ${tealColor}`, borderRadius: '10px', fontFamily: 'monospace', fontWeight: 'bold' }}
+              style={{ width: '100%', padding: '15px', fontSize: '24px', textAlign: 'center', border: `2px solid ${tealColor}`, borderRadius: '10px', fontFamily: 'Gabarito', sans-serif, fontWeight: 'bold' }}
             />
           </div>
           
@@ -270,7 +278,7 @@ const submitWager = () => {
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2 style={{ color: orangeColor, fontSize: '28px', margin: '0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+                <h2 style={{ color: orangeColor, fontSize: '28px', margin: '0', fontFamily: 'Gabarito', sans-serif }}>{teamName}</h2>
                 <p style={{ color: tealColor, margin: '5px 0 0 0' }}>Game: <strong>{gameCode}</strong></p>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -295,7 +303,7 @@ const submitWager = () => {
 {/* Venue Specials - Show before first question */}
 {questionNumber === 0 && venueSpecials && (
   <div style={{ background: '#FFF9C4', border: '3px solid #FFB300', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-    <h3 style={{ color: '#F57C00', fontSize: '22px', marginBottom: '15px', fontFamily: 'Paytone One', textAlign: 'center' }}>
+    <h3 style={{ color: '#F57C00', fontSize: '22px', marginBottom: '15px', fontFamily: 'Gabarito', sans-serif, textAlign: 'center' }}>
       🍹 Tonight's Specials at {venueName} 🍹
     </h3>
     <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#333', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
@@ -343,7 +351,7 @@ const submitWager = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: '14px', color: tealColor }}>FINAL QUESTION</div>
-                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito', sans-serif }}>{teamName}</h2>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '14px', color: tealColor }}>Current Score</div>
@@ -355,7 +363,7 @@ const submitWager = () => {
           {/* Category Display */}
           <div style={{ background: '#FFF9C4', border: `4px solid ${orangeColor}`, borderRadius: '15px', padding: '40px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', textAlign: 'center' }}>
             <div style={{ fontSize: '18px', color: tealColor, marginBottom: '10px' }}>Category</div>
-            <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: orangeColor, margin: 0, fontFamily: 'Paytone One' }}>{finalCategory}</h2>
+            <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: orangeColor, margin: 0, fontFamily: 'Gabarito', sans-serif }}>{finalCategory}</h2>
           </div>
 
           {!wagerSubmitted ? (
@@ -409,7 +417,7 @@ const submitWager = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION!' : `Question ${questionNumber}`}</div>
-                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito', sans-serif }}>{teamName}</h2>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
@@ -497,7 +505,7 @@ const submitWager = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION' : `Question ${questionNumber}`}</div>
-                  <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+                  <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito', sans-serif }}>{teamName}</h2>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
@@ -511,7 +519,7 @@ const submitWager = () => {
               <div style={{ fontSize: '80px', marginBottom: '20px', color: isCorrect ? greenColor : redColor }}>
                 {isCorrect ? '✓' : '✗'}
               </div>
-              <h2 style={{ color: isCorrect ? greenColor : redColor, fontSize: '32px', marginBottom: '15px', fontFamily: 'Paytone One' }}>
+              <h2 style={{ color: isCorrect ? greenColor : redColor, fontSize: '32px', marginBottom: '15px', fontFamily: 'Gabarito', sans-serif }}>
                 {isCorrect ? 'Correct!' : 'Incorrect'}
               </h2>
               <p style={{ color: '#666', fontSize: '18px' }}>
@@ -532,7 +540,7 @@ const submitWager = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION' : `Question ${questionNumber}`}</div>
-                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito', sans-serif }}>{teamName}</h2>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
@@ -543,7 +551,7 @@ const submitWager = () => {
 
           {/* Submitted Message */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Paytone One' }}>Answer Submitted</h2>
+            <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Gabarito', sans-serif }}>Answer Submitted</h2>
             <p style={{ color: '#666', fontSize: '18px', marginBottom: '25px' }}>Waiting for host to review...</p>
             
             <div style={{ background: '#f5f5f5', borderRadius: '10px', padding: '20px', marginTop: '20px' }}>
@@ -571,7 +579,7 @@ if (screen === 'results') {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '14px', color: tealColor }}>Question {questionNumber}</div>
-              <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Paytone One' }}>{teamName}</h2>
+              <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito', sans-serif }}>{teamName}</h2>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
@@ -597,7 +605,7 @@ if (screen === 'results') {
             fontSize: '28px', 
             margin: '0 0 10px 0', 
             color: answerResult === 'correct' ? '#2E7D32' : '#C62828',
-            fontFamily: 'Paytone One'
+            fontFamily: 'Gabarito', sans-serif
           }}>
             {answerResult === 'correct' ? 'CORRECT!' : 'INCORRECT'}
           </h2>
@@ -645,7 +653,7 @@ if (screen === 'results') {
           <div style={{ background: 'white', borderRadius: '20px', padding: '40px', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
               <div style={{ fontSize: '80px', marginBottom: '10px' }}>🏆</div>
-              <h1 style={{ fontFamily: 'Paytone One', fontSize: '42px', color: orangeColor, margin: '0 0 10px 0' }}>Game Over!</h1>
+              <h1 style={{ fontFamily: 'Gabarito', sans-serif, fontSize: '42px', color: orangeColor, margin: '0 0 10px 0' }}>Game Over!</h1>
               <p style={{ color: tealColor, fontSize: '20px' }}>Final Results</p>
             </div>
 
