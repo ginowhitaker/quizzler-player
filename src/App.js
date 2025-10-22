@@ -470,9 +470,6 @@ const submitWager = () => {
     </div>
   </div>
 )}
-            </div>
-          </div>
-
           {/* Submit Button */}
           <button
             onClick={submitAnswer}
