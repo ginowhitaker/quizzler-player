@@ -12,6 +12,7 @@ export default function PlayerApp() {
   const [venueName, setVenueName] = useState('');
   const [venueSpecials, setVenueSpecials] = useState('');
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [correctAnswer, setCorrectAnswer] = useState('');
   const [questionNumber, setQuestionNumber] = useState(0);
   const [isFinal, setIsFinal] = useState(false);
   const [finalCategory, setFinalCategory] = useState('');
@@ -78,8 +79,8 @@ export default function PlayerApp() {
 socket.on('player:answerMarked', (data) => {
   console.log('Answer marked event received:', data);
   setAnswerResult(data.correct ? 'correct' : 'incorrect');
+  setCorrectAnswer(data.correctAnswer || '');
   setScreen('results');
-  // Don't check submittedRef - just always show results
 });
 
     socket.on('player:scoresUpdated', (data) => {
@@ -433,38 +434,42 @@ const submitWager = () => {
             />
           </div>
 
-          {/* Confidence Grid */}
-          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '15px', fontSize: '18px' }}>
-              {isFinal ? 'Wager (0-20 points)' : 'Confidence (1-15, each used once)'}
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
-              {confidenceOptions.map(num => {
-  const isUsed = !isFinal && usedConfidences.includes(num);
-  const isSelected = selectedConfidence === num;
-  const isDisabled = isUsed || isFinal; // All buttons disabled for final
-  
-  return (
-    <button
-      key={num}
-      onClick={() => !isDisabled && setSelectedConfidence(num)}
-      disabled={isDisabled}
-      style={{
-        padding: '20px',
-        fontSize: '20px',
-        fontWeight: 'bold',
-        border: isSelected ? `3px solid ${orangeColor}` : '2px solid #ddd',
-        borderRadius: '10px',
-        background: isUsed ? '#e0e0e0' : isSelected ? '#FFE0B2' : 'white',
-        color: isUsed ? '#999' : tealColor,
-        cursor: isDisabled ? 'not-allowed' : 'pointer',
-        textDecoration: isUsed ? 'line-through' : 'none'
-      }}
-    >
-      {num}
-    </button>
-  );
-})}
+{/* Confidence Grid - Only show for regular questions */}
+{!isFinal && (
+  <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+    <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '15px', fontSize: '18px' }}>
+      {isFinal ? 'Wager (0-20 points)' : 'Confidence (1-15, each used once)'}
+    </label>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
+      {confidenceOptions.map(num => {
+        const isUsed = !isFinal && usedConfidences.includes(num);
+        const isSelected = selectedConfidence === num;
+        const isDisabled = isUsed || isFinal;
+        
+        return (
+          <button
+            key={num}
+            onClick={() => !isDisabled && setSelectedConfidence(num)}
+            disabled={isDisabled}
+            style={{
+              padding: '20px',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              border: isSelected ? `3px solid ${orangeColor}` : '2px solid #ddd',
+              borderRadius: '10px',
+              background: isUsed ? '#e0e0e0' : isSelected ? '#FFE0B2' : 'white',
+              color: isUsed ? '#999' : tealColor,
+              cursor: isDisabled ? 'not-allowed' : 'pointer',
+              textDecoration: isUsed ? 'line-through' : 'none'
+            }}
+          >
+            {num}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
             </div>
           </div>
 
@@ -611,10 +616,18 @@ if (screen === 'results') {
         </div>
 
         {/* Your Answer */}
-        <div style={{ background: '#FFF3E0', borderRadius: '15px', padding: '20px', marginBottom: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-          <div style={{ fontSize: '14px', color: orangeColor, marginBottom: '10px', fontWeight: 'bold' }}>Your Answer:</div>
-          <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{answer}</p>
-        </div>
+<div style={{ background: '#FFF3E0', borderRadius: '15px', padding: '20px', marginBottom: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+  <div style={{ fontSize: '14px', color: orangeColor, marginBottom: '10px', fontWeight: 'bold' }}>Your Answer:</div>
+  <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{answer}</p>
+</div>
+
+{/* Correct Answer */}
+{correctAnswer && (
+  <div style={{ background: '#E8F5E9', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+    <div style={{ fontSize: '14px', color: '#4CAF50', marginBottom: '10px', fontWeight: 'bold' }}>Correct Answer:</div>
+    <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{correctAnswer}</p>
+  </div>
+)}
 
         {/* Waiting Message */}
         <div style={{ background: 'white', borderRadius: '15px', padding: '30px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
