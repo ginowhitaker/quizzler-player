@@ -9,12 +9,14 @@ export default function PlayerApp() {
   const [gameCode, setGameCode] = useState('');
   const [teamName, setTeamName] = useState('');
   const [teams, setTeams] = useState([]);
+  const [venueName, setVenueName] = useState('');
+  const [venueSpecials, setVenueSpecials] = useState('');
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [questionNumber, setQuestionNumber] = useState(0);
   const [isFinal, setIsFinal] = useState(false);
-const [finalCategory, setFinalCategory] = useState('');
-const [wager, setWager] = useState(0);
-const [wagerSubmitted, setWagerSubmitted] = useState(false);
+  const [finalCategory, setFinalCategory] = useState('');
+  const [wager, setWager] = useState(0);
+  const [wagerSubmitted, setWagerSubmitted] = useState(false);
   const [answer, setAnswer] = useState('');
   const [selectedConfidence, setSelectedConfidence] = useState(null);
   const [usedConfidences, setUsedConfidences] = useState([]);
@@ -49,6 +51,8 @@ const [wagerSubmitted, setWagerSubmitted] = useState(false);
       setTeams(data.teams);
       const myTeam = data.teams.find(t => t.name === teamName);
       setUsedConfidences(myTeam?.usedConfidences || []);
+      setVenueName(data.venueName || '');
+      setVenueSpecials(data.venueSpecials || '');
       
       if (data.currentQuestion) {
         setCurrentQuestion(data.currentQuestion.text);
@@ -277,11 +281,27 @@ const submitWager = () => {
           </div>
 
           {/* Waiting Message */}
-          <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏳</div>
-            <h2 style={{ color: tealColor, fontSize: '24px', marginBottom: '10px' }}>Waiting for Next Question...</h2>
-            <p style={{ color: '#666', fontSize: '16px' }}>The host will push the question when ready</p>
-          </div>
+<div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+  <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏳</div>
+  <h2 style={{ color: tealColor, fontSize: '24px', marginBottom: '10px' }}>
+    {questionNumber === 0 ? 'Waiting for Game to Start...' : 'Waiting for Next Question...'}
+  </h2>
+  <p style={{ color: '#666', fontSize: '16px' }}>
+    {questionNumber === 0 ? 'The host will start the game shortly' : 'The host will push the question when ready'}
+  </p>
+</div>
+
+{/* Venue Specials - Show before first question */}
+{questionNumber === 0 && venueSpecials && (
+  <div style={{ background: '#FFF9C4', border: '3px solid #FFB300', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+    <h3 style={{ color: '#F57C00', fontSize: '22px', marginBottom: '15px', fontFamily: 'Paytone One', textAlign: 'center' }}>
+      🍹 Tonight's Specials at {venueName} 🍹
+    </h3>
+    <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#333', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
+      {venueSpecials}
+    </p>
+  </div>
+)}
 
           {/* Leaderboard */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
