@@ -325,10 +325,10 @@ const submitWager = () => {
 //               </div>
 //             ))}
 //           </div>
-//         </div>
-//       </div>
-//     );
-//   }
+        </div>
+      </div>
+    );
+  }
 // Final Wager Screen
   if (screen === 'finalWager') {
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
