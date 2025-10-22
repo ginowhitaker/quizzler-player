@@ -303,28 +303,29 @@ const submitWager = () => {
   </div>
 )}
 
-          // {/* Leaderboard */}
-//           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-//             <h3 style={{ color: tealColor, fontSize: '20px', marginBottom: '15px' }}>🏆 Leaderboard</h3>
-//             {leaderboard.map((team, idx) => (
-//               <div key={team.name} style={{ 
-//                 background: team.name === teamName ? '#FFF3E0' : '#f5f5f5', 
-//                 padding: '15px', 
-//                 borderRadius: '10px', 
-//                 marginBottom: '10px',
-//                 border: team.name === teamName ? `3px solid ${orangeColor}` : 'none',
-//                 display: 'flex',
-//                 justifyContent: 'space-between',
-//                 alignItems: 'center'
-//               }}>
-//                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-//                   <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#999' }}>#{idx + 1}</span>
-//                   <span style={{ fontSize: '18px', fontWeight: team.name === teamName ? 'bold' : 'normal', color: tealColor }}>{team.name}</span>
-//                 </div>
-//                 <span style={{ fontSize: '24px', fontWeight: 'bold', color: orangeColor }}>{team.score}</span>
-//               </div>
-//             ))}
-//           </div>
+{/* Leaderboard - Hidden during game
+<div style={{ background: 'white', borderRadius: '15px', padding: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+  <h3 style={{ color: tealColor, fontSize: '20px', marginBottom: '15px' }}>🏆 Leaderboard</h3>
+  {leaderboard.map((team, idx) => (
+    <div key={team.name} style={{ 
+      background: team.name === teamName ? '#FFF3E0' : '#f5f5f5', 
+      padding: '15px', 
+      borderRadius: '10px', 
+      marginBottom: '10px',
+      border: team.name === teamName ? `3px solid ${orangeColor}` : 'none',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#999' }}>#{idx + 1}</span>
+        <span style={{ fontSize: '18px', fontWeight: team.name === teamName ? 'bold' : 'normal', color: tealColor }}>{team.name}</span>
+      </div>
+      <span style={{ fontSize: '24px', fontWeight: 'bold', color: orangeColor }}>{team.score}</span>
+    </div>
+  ))}
+</div>
+*/}
         </div>
       </div>
     );
