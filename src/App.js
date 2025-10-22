@@ -72,10 +72,13 @@ const [wagerSubmitted, setWagerSubmitted] = useState(false);
     });
 
 socket.on('player:answerMarked', (data) => {
+  console.log('Answer marked event received:', data); // ADD THIS
   if (submittedRef.current) {
     setAnswerResult(data.correct ? 'correct' : 'incorrect');
     submittedRef.current = false;
-    setScreen('results'); // Go to results screen instead of waiting
+    setScreen('results');
+  } else {
+    console.log('submittedRef was false'); // ADD THIS TOO
   }
 });
 
