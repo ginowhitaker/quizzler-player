@@ -825,5 +825,5 @@ if (screen === 'results') {
     );
   }
 
-  return null;
+  return null; 
   }
