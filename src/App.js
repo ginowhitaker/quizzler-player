@@ -531,7 +531,7 @@ socket.on('player:finalQuestionReceived', (data) => {
             onClick={() => !isUsed && setSelectedConfidence(num)}
             disabled={isUsed}
             style={{
-              padding: '20px',
+              padding: '10px',
               fontSize: '20px',
               fontWeight: 'bold',
               border: isSelected ? `3px solid ${orangeColor}` : '2px solid #ddd',
