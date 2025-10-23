@@ -392,7 +392,7 @@ const submitWager = () => {
                   max="20"
                   value={wager}
                   onChange={(e) => setWager(parseInt(e.target.value) || 0)}
-                  style={{ width: '100%', padding: '20px', fontSize: '32px', textAlign: 'center', border: `3px solid ${tealColor}`, borderRadius: '10px', fontWeight: 'bold' }}
+                  style={{ width: '90%', padding: '20px', fontSize: '32px', textAlign: 'center', border: `3px solid ${tealColor}`, borderRadius: '10px', fontWeight: 'bold' }}
                 />
               </div>
 
