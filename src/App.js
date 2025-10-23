@@ -729,8 +729,8 @@ if (screen === 'results') {
 
         {/* Result Banner */}
         <div style={{ 
-          background: answerResult === 'correct' ? '#C8E6C9' : '#FFCDD2', 
-          border: `4px solid ${answerResult === 'correct' ? '#4CAF50' : '#F44336'}`,
+          background: wasCorrect ? '#C8E6C9' : '#FFCDD2', 
+          border: `4px solid ${wasCorrect ? '#4CAF50' : '#F44336'}`,
           borderRadius: '15px', 
           padding: '30px', 
           marginBottom: '20px', 
@@ -738,18 +738,18 @@ if (screen === 'results') {
           boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
         }}>
           <div style={{ fontSize: '48px', marginBottom: '10px' }}>
-            {answerResult === 'correct' ? '✓' : '✗'}
+            {isVisualResult ? '📸' : (wasCorrect ? '✓' : '✗')}
           </div>
           <h2 style={{ 
             fontSize: '28px', 
             margin: '0 0 10px 0', 
-            color: answerResult === 'correct' ? '#2E7D32' : '#C62828',
+            color: wasCorrect ? '#2E7D32' : '#C62828',
             fontFamily: 'Gabarito, sans-serif'
           }}>
-            {answerResult === 'correct' ? 'CORRECT!' : 'INCORRECT'}
+            {isVisualResult ? 'VISUAL ROUND SCORED' : (wasCorrect ? 'CORRECT!' : 'INCORRECT')}
           </h2>
-          <p style={{ fontSize: '20px', margin: 0, color: answerResult === 'correct' ? '#2E7D32' : '#C62828' }}>
-            {answerResult === 'correct' ? `+${pointsEarned} points` : `+0 points`}
+          <p style={{ fontSize: '20px', margin: 0, color: wasCorrect ? '#2E7D32' : '#C62828' }}>
+            +{pointsEarned} points {isVisualResult ? `(${pointsEarned} of 6 correct)` : ''}
           </p>
         </div>
 
