@@ -14,6 +14,9 @@ export default function PlayerApp() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [questionNumber, setQuestionNumber] = useState(0);
+  const [isVisual, setIsVisual] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [visualAnswers, setVisualAnswers] = useState(['', '', '', '', '', '']);
   const [isFinal, setIsFinal] = useState(false);
   const [finalCategory, setFinalCategory] = useState('');
   const [wager, setWager] = useState(0);
@@ -69,10 +72,13 @@ export default function PlayerApp() {
       setCurrentQuestion(data.question);
       setQuestionNumber(data.questionNumber);
       setIsFinal(data.isFinal);
+      setIsVisual(data.type === 'visual');
+      setImageUrl(data.imageUrl || null);
       setAnswer('');
+      setVisualAnswers(['', '', '', '', '', '']);
       setSelectedConfidence(null);
       setSubmitted(false);
-      setAnswerResult(null); // Clear previous feedback
+      setAnswerResult(null);
       setScreen('question');
     });
 
@@ -140,48 +146,58 @@ socket.on('player:finalQuestionReceived', (data) => {
   };
 
   const submitAnswer = () => {
-    if (!answer) {
-      alert('Please enter an answer');
-      return;
-    }
-    
-    if (!isFinal) {
-      if (!selectedConfidence || selectedConfidence < 1 || selectedConfidence > 15) {
-        alert('Please select a confidence value');
+    if (isVisual) {
+      // Visual question - check all 6 answers are filled, no confidence needed
+      if (visualAnswers.some(ans => !ans.trim())) {
+        alert('Please answer all 6 parts');
         return;
       }
-      if (usedConfidences.includes(selectedConfidence)) {
-        alert('You have already used this confidence value');
-        return;
-      }
+      
+      socket.emit('player:submitAnswer', {
+        gameCode: gameCode.toUpperCase(),
+        teamName,
+        answerText: visualAnswers, // Send array
+        confidence: 0 // Visual questions don't use confidence
+      });
+      
+      setSubmitted(true);
+      
     } else {
-      if (selectedConfidence === null || selectedConfidence < 0 || selectedConfidence > 20) {
-        alert('Please select a wager between 0 and 20');
+      // Regular question logic
+      if (!answer) {
+        alert('Please enter an answer');
         return;
       }
-    }
+      
+      if (!isFinal) {
+        if (!selectedConfidence || selectedConfidence < 1 || selectedConfidence > 15) {
+          alert('Please select a confidence value');
+          return;
+        }
+        if (usedConfidences.includes(selectedConfidence)) {
+          alert('You have already used this confidence value');
+          return;
+        }
+      } else {
+        if (selectedConfidence === null || selectedConfidence < 0 || selectedConfidence > 20) {
+          alert('Please select a wager between 0 and 20');
+          return;
+        }
+      }
 
-    socket.emit('player:submitAnswer', {
-      gameCode: gameCode.toUpperCase(),
-      teamName,
-      answerText: answer,
-      confidence: selectedConfidence
-    });
-    
-    // Update used confidences locally
-    if (!isFinal) {
-      setUsedConfidences(prev => [...prev, selectedConfidence]);
+      socket.emit('player:submitAnswer', {
+        gameCode: gameCode.toUpperCase(),
+        teamName,
+        answerText: answer,
+        confidence: selectedConfidence
+      });
+      
+      if (!isFinal) {
+        setUsedConfidences(prev => [...prev, selectedConfidence]);
+      }
+      setSubmitted(true);
     }
   };
-
-const submitWager = () => {
-    if (wager < 0 || wager > 20) {
-      alert('Wager must be between 0 and 20 points');
-      return;
-    }
-    
-    setSelectedConfidence(wager);
-    setWagerSubmitted(true);
     
     socket.emit('player:wagerSubmitted', {
       gameCode: gameCode.toUpperCase(),
@@ -447,32 +463,65 @@ const submitWager = () => {
 
           {/* Answer Input */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px' }}>Your Answer</label>
-            <textarea
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              placeholder="Type your answer here..."
-              style={{ width: '90%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '30px', resize: 'vertical' }}
-            />
+            {isVisual && imageUrl && (
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <img 
+                  src={imageUrl} 
+                  alt="Visual Question"
+                  style={{ maxWidth: '100%', height: 'auto', borderRadius: '10px', border: '2px solid ' + tealColor }}
+                />
+              </div>
+            )}
+            
+            {isVisual ? (
+              // 6 input fields for visual questions
+              <div>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px' }}>Your Answers (1-6)</label>
+                {[0, 1, 2, 3, 4, 5].map(idx => (
+                  <div key={idx} style={{ marginBottom: '10px' }}>
+                    <input
+                      type="text"
+                      value={visualAnswers[idx]}
+                      onChange={(e) => {
+                        const newAnswers = [...visualAnswers];
+                        newAnswers[idx] = e.target.value;
+                        setVisualAnswers(newAnswers);
+                      }}
+                      placeholder={`Answer ${idx + 1}`}
+                      style={{ width: '90%', padding: '12px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '8px' }}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              // Regular single answer
+              <>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px' }}>Your Answer</label>
+                <textarea
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Type your answer here..."
+                  style={{ width: '90%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '30px', resize: 'vertical' }}
+                />
+              </>
+            )}
           </div>
-
-{/* Confidence Grid - Only show for regular questions */}
-{!isFinal && (
+{/* Confidence Grid - Only show for regular non-final questions */}
+{!isFinal && !isVisual && (
   <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
     <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '15px', fontSize: '18px' }}>
-      {isFinal ? 'Wager (0-20 points)' : 'Confidence (1-15, each used once)'}
+      Confidence (1-15, each used once)
     </label>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
       {confidenceOptions.map(num => {
-        const isUsed = !isFinal && usedConfidences.includes(num);
+        const isUsed = usedConfidences.includes(num);
         const isSelected = selectedConfidence === num;
-        const isDisabled = isUsed || isFinal;
         
         return (
           <button
             key={num}
-            onClick={() => !isDisabled && setSelectedConfidence(num)}
-            disabled={isDisabled}
+            onClick={() => !isUsed && setSelectedConfidence(num)}
+            disabled={isUsed}
             style={{
               padding: '20px',
               fontSize: '20px',
@@ -481,7 +530,7 @@ const submitWager = () => {
               borderRadius: '10px',
               background: isUsed ? '#e0e0e0' : isSelected ? '#FFE0B2' : 'white',
               color: isUsed ? '#999' : tealColor,
-              cursor: isDisabled ? 'not-allowed' : 'pointer',
+              cursor: isUsed ? 'not-allowed' : 'pointer',
               textDecoration: isUsed ? 'line-through' : 'none'
             }}
           >
@@ -490,6 +539,15 @@ const submitWager = () => {
         );
       })}
     </div>
+  </div>
+)}
+
+{/* Visual Question Info */}
+{isVisual && (
+  <div style={{ background: '#E3F2FD', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', textAlign: 'center' }}>
+    <p style={{ color: tealColor, fontSize: '16px', margin: 0, fontWeight: 'bold' }}>
+      📸 Visual Round: 1 point per correct answer (6 points possible)
+    </p>
   </div>
 )}
           {/* Submit Button */}
