@@ -220,10 +220,22 @@ const submitWager = () => {
   const redColor = '#C60404';
   const blueButton = '#32ADE6';
 
+// Logo Component
+  const Logo = () => (
+    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+      <img 
+        src="https://quizzler.pro/img/quizzler_logo.png" 
+        alt="Quizzler" 
+        style={{ height: '30px', width: 'auto' }}
+      />
+    </div>
+  );
+
   // Join Screen
   if (screen === 'join') {
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+      <Logo />
         <div style={{ background: 'white', borderRadius: '20px', padding: '30px', maxWidth: '450px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
          <img 
   src="https://quizzler.pro/img/quizzler_logo.png" 
@@ -240,7 +252,7 @@ const submitWager = () => {
               value={gameCode}
               onChange={(e) => setGameCode(e.target.value.toUpperCase())}
               maxLength={6}
-              style={{ width: '100%', padding: '15px', fontSize: '24px', textAlign: 'center', border: `2px solid ${tealColor}`, borderRadius: '10px', fontFamily: 'Gabarito, sans-serif', fontWeight: 'bold' }}
+              style={{ width: '90%', padding: '15px', fontSize: '24px', textAlign: 'center', border: `2px solid ${tealColor}`, borderRadius: '10px', fontFamily: 'Gabarito, sans-serif', fontWeight: 'bold' }}
             />
           </div>
           
@@ -251,7 +263,7 @@ const submitWager = () => {
               placeholder="Your team name"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
-              style={{ width: '100%', padding: '15px', fontSize: '18px', border: `2px solid ${tealColor}`, borderRadius: '10px' }}
+              style={{ width: '90%', padding: '15px', fontSize: '18px', border: `2px solid ${tealColor}`, borderRadius: '10px' }}
             />
           </div>
           
@@ -273,6 +285,7 @@ const submitWager = () => {
 
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+      <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {/* Header */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -345,6 +358,7 @@ const submitWager = () => {
 
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+      <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {/* Header */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -411,6 +425,7 @@ const submitWager = () => {
 
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+      <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {/* Header */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -438,7 +453,7 @@ const submitWager = () => {
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="Type your answer here..."
-              style={{ width: '100%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '80px', resize: 'vertical' }}
+              style={{ width: '90%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '30px', resize: 'vertical' }}
             />
           </div>
 
@@ -499,6 +514,7 @@ const submitWager = () => {
       const isCorrect = answerResult === 'correct';
       return (
         <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <Logo />
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             {/* Header */}
             <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -534,6 +550,7 @@ const submitWager = () => {
     // Just submitted, waiting for host to mark
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+      <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {/* Header */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -573,6 +590,7 @@ if (screen === 'results') {
   
   return (
     <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+    <Logo />
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
