@@ -727,10 +727,6 @@ if (screen === 'results') {
           </div>
         </div>
 
-                    </div>
-          </div>
-        </div>
-
         {/* Result Banner */}
         <div style={{ 
           background: answerResult === 'correct' ? '#C8E6C9' : '#FFCDD2', 
