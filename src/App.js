@@ -302,7 +302,7 @@ socket.on('player:finalQuestionReceived', (data) => {
           <p style={{ color: tealColor, textAlign: 'center', fontSize: '18px', marginBottom: '30px' }}>Join the Game</p>
           
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', font-family: 'Gabarito, sans-serif' }}>Game Code</label>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', fontFamily: 'Gabarito, sans-serif' }}>Game Code</label>
             <input
               type="text"
               placeholder="Enter code"
@@ -314,7 +314,7 @@ socket.on('player:finalQuestionReceived', (data) => {
           </div>
           
           <div style={{ marginBottom: '30px' }}>
-            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', font-family: 'Gabarito, sans-serif' }}>Team Name</label>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', fontFamily: 'Gabarito, sans-serif' }}>Team Name</label>
             <input
               type="text"
               placeholder="Your team name"
@@ -443,7 +443,7 @@ socket.on('player:finalQuestionReceived', (data) => {
               <p style={{ color: '#666', textAlign: 'center', marginBottom: '20px' }}>Wager up to 20 points!</p>
               
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', font-family: 'Gabarito, sans-serif' }}>Your Wager</label>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>Your Wager</label>
                 <input
                   type="number"
                   min="0"
@@ -531,7 +531,7 @@ socket.on('player:finalQuestionReceived', (data) => {
             {isVisual ? (
               // 6 input fields for visual questions
               <div>
-                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', font-family: 'Gabarito, sans-serif' }}>Your Answers (1-6)</label>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>Your Answers (1-6)</label>
                 {[0, 1, 2, 3, 4, 5].map(idx => (
                   <div key={idx} style={{ marginBottom: '10px' }}>
                     <input
@@ -551,7 +551,7 @@ socket.on('player:finalQuestionReceived', (data) => {
             ) : (
               // Regular single answer
               <>
-                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', font-family: 'Gabarito, sans-serif' }}>Your Answer</label>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>Your Answer</label>
                 <textarea
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
@@ -564,7 +564,7 @@ socket.on('player:finalQuestionReceived', (data) => {
 {/* Confidence Grid - Only show for regular non-final questions */}
 {!isFinal && !isVisual && (
   <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-    <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '15px', fontSize: '18px', font-family: 'Gabarito, sans-serif' }}>
+    <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '15px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>
       Confidence (1-15, each used once)
     </label>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
