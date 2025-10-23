@@ -199,13 +199,21 @@ socket.on('player:finalQuestionReceived', (data) => {
     }
   };
     
+  const submitWager = () => {
+    if (wager < 0 || wager > 20) {
+      alert('Wager must be between 0 and 20 points');
+      return;
+    }
+    
+    setSelectedConfidence(wager);
+    setWagerSubmitted(true);
+    
     socket.emit('player:wagerSubmitted', {
       gameCode: gameCode.toUpperCase(),
       teamName,
       wager
     });
   };
-
   const getLeaderboard = () => {
     return [...teams].sort((a, b) => b.score - a.score);
   };
