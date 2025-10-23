@@ -165,8 +165,6 @@ socket.on('player:finalQuestionReceived', (data) => {
   }, [timerActive, timeRemaining]);
 
   const joinGame = () => {
-
-  const joinGame = () => {
     if (!gameCode || !teamName) {
       alert('Please enter both game code and team name');
       return;
@@ -599,7 +597,7 @@ socket.on('player:finalQuestionReceived', (data) => {
 {isVisual && (
   <div style={{ background: '#E3F2FD', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', textAlign: 'center' }}>
     <p style={{ color: tealColor, fontSize: '16px', margin: 0, fontWeight: 'bold' }}>
-      📸 Visual Round: 1 point per correct answer (6 points possible)
+      Visual Round: 1 point per correct answer (6 points possible)
     </p>
   </div>
 )}
