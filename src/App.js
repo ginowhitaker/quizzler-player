@@ -97,21 +97,25 @@ export default function PlayerApp() {
 
 socket.on('player:answerMarked', (data) => {
   console.log('Answer marked event received:', data);
-  setAnswerResult(data.correct ? 'correct' : 'incorrect');
+  
+  // Handle visual questions differently
+  if (data.isVisual) {
+    setAnswerResult({
+      isVisual: true,
+      visualResults: data.visualResults,
+      pointsEarned: data.pointsEarned
+    });
+  } else {
+    setAnswerResult(data.correct ? 'correct' : 'incorrect');
+  }
+  
   setCorrectAnswer(data.correctAnswer || '');
   setScreen('results');
+  submittedRef.current = false;
 });
 
     socket.on('player:scoresUpdated', (data) => {
   setTeams(data.teams);
-});
-
-socket.on('player:answerMarked', (data) => {
-  if (submittedRef.current) {
-    setAnswerResult(data.correct ? 'correct' : 'incorrect');
-    submittedRef.current = false;
-    setScreen('results'); // ADD THIS LINE
-  }
 });
 
     socket.on('player:gameCompleted', (data) => {
@@ -298,7 +302,7 @@ socket.on('player:finalQuestionReceived', (data) => {
           <p style={{ color: tealColor, textAlign: 'center', fontSize: '18px', marginBottom: '30px' }}>Join the Game</p>
           
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px' }}>Game Code</label>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', font-family: 'Gabarito, sans-serif' }}>Game Code</label>
             <input
               type="text"
               placeholder="Enter code"
@@ -310,7 +314,7 @@ socket.on('player:finalQuestionReceived', (data) => {
           </div>
           
           <div style={{ marginBottom: '30px' }}>
-            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px' }}>Team Name</label>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', font-family: 'Gabarito, sans-serif' }}>Team Name</label>
             <input
               type="text"
               placeholder="Your team name"
@@ -439,7 +443,7 @@ socket.on('player:finalQuestionReceived', (data) => {
               <p style={{ color: '#666', textAlign: 'center', marginBottom: '20px' }}>Wager up to 20 points!</p>
               
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px' }}>Your Wager</label>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', font-family: 'Gabarito, sans-serif' }}>Your Wager</label>
                 <input
                   type="number"
                   min="0"
@@ -527,7 +531,7 @@ socket.on('player:finalQuestionReceived', (data) => {
             {isVisual ? (
               // 6 input fields for visual questions
               <div>
-                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px' }}>Your Answers (1-6)</label>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', font-family: 'Gabarito, sans-serif' }}>Your Answers (1-6)</label>
                 {[0, 1, 2, 3, 4, 5].map(idx => (
                   <div key={idx} style={{ marginBottom: '10px' }}>
                     <input
@@ -547,7 +551,7 @@ socket.on('player:finalQuestionReceived', (data) => {
             ) : (
               // Regular single answer
               <>
-                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px' }}>Your Answer</label>
+                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', font-family: 'Gabarito, sans-serif' }}>Your Answer</label>
                 <textarea
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
@@ -560,7 +564,7 @@ socket.on('player:finalQuestionReceived', (data) => {
 {/* Confidence Grid - Only show for regular non-final questions */}
 {!isFinal && !isVisual && (
   <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-    <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '15px', fontSize: '18px' }}>
+    <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '15px', fontSize: '18px', font-family: 'Gabarito, sans-serif' }}>
       Confidence (1-15, each used once)
     </label>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
@@ -647,7 +651,10 @@ socket.on('player:finalQuestionReceived', (data) => {
                 {isCorrect ? 'Correct!' : 'Incorrect'}
               </h2>
               <p style={{ color: '#666', fontSize: '18px' }}>
-                {isCorrect ? `+${selectedConfidence} points` : isFinal ? `-${selectedConfidence} points` : 'No points'}
+                {isVisual 
+                  ? (isCorrect ? 'All answers correct! +6 points' : 'Some answers incorrect')
+                  : (isCorrect ? `+${selectedConfidence} points` : isFinal ? `-${selectedConfidence} points` : 'No points')
+                }
               </p>
             </div>
           </div>
@@ -694,7 +701,13 @@ socket.on('player:finalQuestionReceived', (data) => {
 // Results Screen - Show after scoring
 if (screen === 'results') {
   const myScore = teams.find(t => t.name === teamName)?.score || 0;
-  const pointsEarned = answerResult === 'correct' ? selectedConfidence : 0;
+  
+  // Handle both regular and visual results
+  const isVisualResult = typeof answerResult === 'object' && answerResult.isVisual;
+  const pointsEarned = isVisualResult 
+    ? answerResult.pointsEarned 
+    : (answerResult === 'correct' ? selectedConfidence : 0);
+  const wasCorrect = isVisualResult ? pointsEarned > 0 : answerResult === 'correct';
   
   return (
     <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
@@ -711,6 +724,10 @@ if (screen === 'results') {
               <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
               <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
             </div>
+          </div>
+        </div>
+
+                    </div>
           </div>
         </div>
 
@@ -748,8 +765,21 @@ if (screen === 'results') {
 
         {/* Your Answer */}
 <div style={{ background: '#FFF3E0', borderRadius: '15px', padding: '20px', marginBottom: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-  <div style={{ fontSize: '14px', color: orangeColor, marginBottom: '10px', fontWeight: 'bold' }}>Your Answer:</div>
-  <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{answer}</p>
+  <div style={{ fontSize: '14px', color: orangeColor, marginBottom: '10px', fontWeight: 'bold' }}>Your Answer{isVisualResult ? 's' : ''}:</div>
+  {isVisualResult ? (
+    <div>
+      {visualAnswers.map((ans, idx) => (
+        <div key={idx} style={{ marginBottom: '8px', padding: '8px', background: answerResult.visualResults[idx] ? '#E8F5E9' : '#FFEBEE', borderRadius: '5px' }}>
+          <strong>#{idx + 1}:</strong> {ans} 
+          <span style={{ marginLeft: '10px', color: answerResult.visualResults[idx] ? '#4CAF50' : '#F44336' }}>
+            {answerResult.visualResults[idx] ? '✓' : '✗'}
+          </span>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{answer}</p>
+  )}
 </div>
 
 {/* Correct Answer */}
