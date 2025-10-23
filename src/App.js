@@ -826,4 +826,4 @@ if (screen === 'results') {
   }
 
   return null;
-}
+  }
