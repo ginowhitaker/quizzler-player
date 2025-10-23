@@ -27,6 +27,9 @@ export default function PlayerApp() {
   const [submitted, setSubmitted] = useState(false);
   const [answerResult, setAnswerResult] = useState(null); // null, 'correct', or 'incorrect'
   const submittedRef = useRef(false);
+  const [timerDuration, setTimerDuration] = useState(0); // Total timer duration in seconds
+  const [timeRemaining, setTimeRemaining] = useState(0); // Current countdown
+  const [timerActive, setTimerActive] = useState(false);
 
   useEffect(() => {
     const newSocket = io(BACKEND_URL, {
@@ -79,6 +82,16 @@ export default function PlayerApp() {
       setSelectedConfidence(null);
       setSubmitted(false);
       setAnswerResult(null);
+      
+      // Initialize timer if present
+      if (data.timerDuration && data.timerDuration > 0) {
+        setTimerDuration(data.timerDuration);
+        setTimeRemaining(data.timerDuration);
+        setTimerActive(true);
+      } else {
+        setTimerActive(false);
+      }
+      
       setScreen('question');
     });
 
@@ -133,6 +146,25 @@ socket.on('player:finalQuestionReceived', (data) => {
       socket.off('player:finalQuestionReceived');
     };
   }, [socket, teamName, isFinal, selectedConfidence]);
+
+  // Timer countdown
+  useEffect(() => {
+    if (!timerActive || timeRemaining <= 0) return;
+
+    const interval = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          setTimerActive(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerActive, timeRemaining]);
+
+  const joinGame = () => {
 
   const joinGame = () => {
     if (!gameCode || !teamName) {
@@ -468,6 +500,19 @@ socket.on('player:finalQuestionReceived', (data) => {
           <div style={{ background: isFinal ? '#FFF9C4' : 'white', border: isFinal ? `4px solid ${orangeColor}` : 'none', borderRadius: '15px', padding: '30px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
             <p style={{ fontSize: '22px', fontWeight: 'bold', color: tealColor, textAlign: 'center', margin: 0 }}>{currentQuestion}</p>
           </div>
+
+          {/* Timer Display */}
+          {timerActive && (
+            <div style={{ 
+              textAlign: 'center', 
+              fontSize: '14px', 
+              color: timeRemaining <= 30 ? '#C60404' : tealColor,
+              marginBottom: '15px',
+              fontWeight: 'bold'
+            }}>
+              ⏱️ Time Remaining: {Math.floor(timeRemaining / 60)}:{String(timeRemaining % 60).padStart(2, '0')}
+            </div>
+          )}
 
           {/* Answer Input */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
