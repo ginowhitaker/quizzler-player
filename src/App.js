@@ -235,9 +235,12 @@ const submitWager = () => {
   if (screen === 'join') {
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
-      <Logo />
         <div style={{ background: 'white', borderRadius: '20px', padding: '30px', maxWidth: '450px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
-        
+         <img 
+  src="https://quizzler.pro/img/quizzler_logo.png" 
+  alt="Quizzler" 
+  style={{ height: '30px', width: 'auto', display: 'block', margin: '0 auto 10px' }}
+/>
           <p style={{ color: tealColor, textAlign: 'center', fontSize: '18px', marginBottom: '30px' }}>Join the Game</p>
           
           <div style={{ marginBottom: '20px' }}>
