@@ -57,7 +57,7 @@ export default function PlayerApp() {
       console.log('Joined game:', data);
       setTeams(data.teams);
       const myTeam = data.teams.find(t => t.name === teamName);
-      setUsedConfidences(myTeam?.usedConfidences || []);
+      setUsedConfidences(data.usedConfidences || []);
       setVenueName(data.venueName || '');
       setVenueSpecials(data.venueSpecials || '');
       
