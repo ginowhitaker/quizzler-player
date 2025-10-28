@@ -97,7 +97,7 @@ useEffect(() => {
   });
   
   return () => newSocket.close();
-}, [gameCode, teamName]);
+}, []);
 
   useEffect(() => {
     if (!socket) return;
