@@ -59,7 +59,6 @@ useEffect(() => {
           // Find this team's data
           const myTeam = gameData.teams?.find(t => t.name === teamName);
           if (myTeam) {
-            setScore(myTeam.score);
             setUsedConfidences(myTeam.usedConfidences || []);
             
             // Check if there's feedback or a current question waiting
@@ -70,10 +69,11 @@ useEffect(() => {
               
               if (myAnswer?.marked) {
                 // Show feedback if answer was already marked
-                setFeedback(myAnswer.correct ? 'correct' : 'incorrect');
+                setAnswerResult(myAnswer.correct ? 'correct' : 'incorrect');
                 setScreen('feedback');
               } else if (myAnswer && !myAnswer.marked) {
                 // Waiting for host to review
+                setSubmitted(true);
                 setScreen('waiting');
               }
             }
@@ -86,6 +86,18 @@ useEffect(() => {
   newSocket.on('disconnect', () => {
     console.log('Disconnected from backend - attempting to reconnect...');
   });
+  
+  newSocket.on('reconnect', (attemptNumber) => {
+    console.log('Reconnected after', attemptNumber, 'attempts');
+  });
+  
+  newSocket.on('error', (error) => {
+    console.error('Socket error:', error);
+    alert(error.message);
+  });
+  
+  return () => newSocket.close();
+}, [gameCode, teamName]);
   
   newSocket.on('reconnect', (attemptNumber) => {
     console.log('Reconnected after', attemptNumber, 'attempts');
