@@ -98,18 +98,6 @@ useEffect(() => {
   
   return () => newSocket.close();
 }, [gameCode, teamName]);
-  
-  newSocket.on('reconnect', (attemptNumber) => {
-    console.log('Reconnected after', attemptNumber, 'attempts');
-  });
-  
-  newSocket.on('error', (error) => {
-    console.error('Socket error:', error);
-    alert(error.message);
-  });
-  
-  return () => newSocket.close();
-}, [gameCode, teamName]);
 
   useEffect(() => {
     if (!socket) return;
