@@ -31,24 +31,73 @@ export default function PlayerApp() {
   const [timeRemaining, setTimeRemaining] = useState(0); // Current countdown
   const [timerActive, setTimerActive] = useState(false);
 
-  useEffect(() => {
-    const newSocket = io(BACKEND_URL, {
-      transports: ['websocket', 'polling']
-    });
+useEffect(() => {
+  const newSocket = io(BACKEND_URL, {
+    transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000
+  });
+  
+  setSocket(newSocket);
+  
+  newSocket.on('connect', () => {
+    console.log('Connected to backend');
     
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Connected to backend');
-    });
-
-    newSocket.on('error', (error) => {
-      console.error('Socket error:', error);
-      alert(error.message);
-    });
-
-    return () => newSocket.close();
-  }, []);
+    // If reconnecting mid-game, rejoin the game room
+    if (gameCode && teamName) {
+      console.log('Rejoining game:', gameCode, 'as team:', teamName);
+      newSocket.emit('player:join', { gameCode, teamName });
+      
+      // Sync game state from backend
+      fetch(`${BACKEND_URL}/api/game/${gameCode}`)
+        .then(res => res.json())
+        .then(gameData => {
+          console.log('Synced player game state:', gameData);
+          
+          // Find this team's data
+          const myTeam = gameData.teams?.find(t => t.name === teamName);
+          if (myTeam) {
+            setScore(myTeam.score);
+            setUsedConfidences(myTeam.usedConfidences || []);
+            
+            // Check if there's feedback or a current question waiting
+            const currentQ = gameData.currentQuestion;
+            if (currentQ && currentQ.number) {
+              const questionKey = `q${currentQ.number}`;
+              const myAnswer = myTeam.answers?.[questionKey];
+              
+              if (myAnswer?.marked) {
+                // Show feedback if answer was already marked
+                setFeedback(myAnswer.correct ? 'correct' : 'incorrect');
+                setScreen('feedback');
+              } else if (myAnswer && !myAnswer.marked) {
+                // Waiting for host to review
+                setScreen('waiting');
+              }
+            }
+          }
+        })
+        .catch(err => console.error('Failed to sync player state:', err));
+    }
+  });
+  
+  newSocket.on('disconnect', () => {
+    console.log('Disconnected from backend - attempting to reconnect...');
+  });
+  
+  newSocket.on('reconnect', (attemptNumber) => {
+    console.log('Reconnected after', attemptNumber, 'attempts');
+  });
+  
+  newSocket.on('error', (error) => {
+    console.error('Socket error:', error);
+    alert(error.message);
+  });
+  
+  return () => newSocket.close();
+}, [gameCode, teamName]);
 
   useEffect(() => {
     if (!socket) return;
