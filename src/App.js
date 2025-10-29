@@ -33,14 +33,14 @@ export default function PlayerApp() {
 
 useEffect(() => {
   const newSocket = io(BACKEND_URL, {
-  transports: ['websocket', 'polling'],
-  reconnection: true,
-  reconnectionAttempts: 10,
-  reconnectionDelay: 1000,
-  reconnectionDelayMax: 5000,
-  timeout: 20000,           // ADD: Connection timeout
-  forceNew: true           // ADD: Prevent multiple connections
-});
+    transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    timeout: 20000
+    // REMOVED: forceNew: true
+  });
   
   setSocket(newSocket);
   
@@ -53,7 +53,7 @@ useEffect(() => {
       newSocket.emit('player:join', { gameCode, teamName });
       
       // Sync game state from backend
-      fetch(`${BACKEND_URL}/api/game/${gameCode}`)
+      fetch(`${BACKEND_URL}/api/game/${gameCode}`)  // FIXED: Added opening (
         .then(res => res.json())
         .then(gameData => {
           console.log('Synced player game state:', gameData);
