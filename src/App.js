@@ -33,12 +33,14 @@ export default function PlayerApp() {
 
 useEffect(() => {
   const newSocket = io(BACKEND_URL, {
-    transports: ['websocket', 'polling'],
-    reconnection: true,
-    reconnectionAttempts: 10,
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000
-  });
+  transports: ['websocket', 'polling'],
+  reconnection: true,
+  reconnectionAttempts: 10,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 20000,           // ADD: Connection timeout
+  forceNew: true           // ADD: Prevent multiple connections
+});
   
   setSocket(newSocket);
   
