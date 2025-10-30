@@ -293,7 +293,7 @@ socket.on('player:finalQuestionReceived', (data) => {
     setSelectedConfidence(wager);
     setWagerSubmitted(true);
     
-    socket.emit('player:wagerSubmitted', {
+    socket.emit('player:submitWager', {
       gameCode: gameCode.toUpperCase(),
       teamName,
       wager
