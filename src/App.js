@@ -14,7 +14,8 @@ export default function PlayerApp() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [questionNumber, setQuestionNumber] = useState(0);
-  const [isVisual, setIsVisual] = useState(false);
+  socket.on('player:questionReceived', ({ type, ... }) => {
+  setIsVisual(type === 'visual');
   const [imageUrl, setImageUrl] = useState(null);
   const [visualAnswers, setVisualAnswers] = useState(['', '', '', '', '', '']);
   const [isFinal, setIsFinal] = useState(false);
@@ -539,7 +540,9 @@ socket.on('player:finalQuestionReceived', (data) => {
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION!' : `Question ${questionNumber}`}</div>
+                <div style={{ fontSize: '14px', color: tealColor }}>
+  {isFinal ? 'FINAL QUESTION!' : isVisual ? 'VISUAL ROUND' : `Question ${questionNumber}`}
+</div>
                 <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
               </div>
               <div style={{ textAlign: 'right' }}>
