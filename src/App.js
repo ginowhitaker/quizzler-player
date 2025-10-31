@@ -14,6 +14,7 @@ export default function PlayerApp() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [questionNumber, setQuestionNumber] = useState(0);
+  const [isVisual, setIsVisual] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
   const [visualAnswers, setVisualAnswers] = useState(['', '', '', '', '', '']);
   const [isFinal, setIsFinal] = useState(false);
