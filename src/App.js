@@ -14,8 +14,6 @@ export default function PlayerApp() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [questionNumber, setQuestionNumber] = useState(0);
-  socket.on('player:questionReceived', ({ type, ... }) => {
-  setIsVisual(type === 'visual');
   const [imageUrl, setImageUrl] = useState(null);
   const [visualAnswers, setVisualAnswers] = useState(['', '', '', '', '', '']);
   const [isFinal, setIsFinal] = useState(false);
