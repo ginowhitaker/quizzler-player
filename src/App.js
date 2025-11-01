@@ -8,6 +8,7 @@ export default function PlayerApp() {
   const [screen, setScreen] = useState('join');
   const [gameCode, setGameCode] = useState('');
   const [teamName, setTeamName] = useState('');
+  const [role, setRole] = useState(null);
   const [teams, setTeams] = useState([]);
   const [venueName, setVenueName] = useState('');
   const [venueSpecials, setVenueSpecials] = useState('');
@@ -104,23 +105,24 @@ useEffect(() => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('player:joined', (data) => {
-      console.log('Joined game:', data);
-      setTeams(data.teams);
-      const myTeam = data.teams.find(t => t.name === teamName);
-      setUsedConfidences(data.usedConfidences || []);
-      setVenueName(data.venueName || '');
-      setVenueSpecials(data.venueSpecials || '');
-      
-      if (data.currentQuestion) {
-        setCurrentQuestion(data.currentQuestion.text);
-        setQuestionNumber(data.currentQuestion.number);
-        setIsFinal(data.currentQuestion.isFinal);
-        setScreen('question');
-      } else {
-        setScreen('waiting');
-      }
-    });
+socket.on('player:joined', (data) => {
+  console.log('Joined game:', data);
+  setRole(data.role); // ADD THIS LINE
+  setTeams(data.teams);
+  const myTeam = data.teams.find(t => t.name === teamName);
+  setUsedConfidences(data.usedConfidences || []);
+  setVenueName(data.venueName || '');
+  setVenueSpecials(data.venueSpecials || '');
+  
+  if (data.currentQuestion) {
+    setCurrentQuestion(data.currentQuestion.text);
+    setQuestionNumber(data.currentQuestion.number);
+    setIsFinal(data.currentQuestion.isFinal);
+    setScreen('question');
+  } else {
+    setScreen('waiting');
+  }
+});
 
     socket.on('player:questionReceived', (data) => {
       setCurrentQuestion(data.question);
@@ -395,20 +397,34 @@ socket.on('player:finalQuestionReceived', (data) => {
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          {/* Header */}
-          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <h2 style={{ color: orangeColor, fontSize: '28px', margin: '0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
-                <p style={{ color: tealColor, margin: '5px 0 0 0' }}>Game: <strong>{gameCode}</strong></p>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '14px', color: tealColor }}>Your Score</div>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
-                <div style={{ fontSize: '14px', color: tealColor }}>{getOrdinal()} Place</div>
-              </div>
-            </div>
-          </div>
+{/* Header */}
+<div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <h2 style={{ color: orangeColor, fontSize: '28px', margin: '0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
+        {role && (
+          <span style={{
+            background: role === 'captain' ? '#FFD700' : '#E0E0E0',
+            color: role === 'captain' ? '#000' : '#666',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            {role === 'captain' ? '⭐ Captain' : '👁️ Viewer'}
+          </span>
+        )}
+      </div>
+      <p style={{ color: tealColor, margin: '5px 0 0 0' }}>Game: <strong>{gameCode}</strong></p>
+    </div>
+    <div style={{ textAlign: 'right' }}>
+      <div style={{ fontSize: '14px', color: tealColor }}>Your Score</div>
+      <div style={{ fontSize: '36px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+      <div style={{ fontSize: '14px', color: tealColor }}>{getOrdinal()} Place</div>
+    </div>
+  </div>
+</div>
 
           {/* Waiting Message */}
 <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -536,20 +552,34 @@ socket.on('player:finalQuestionReceived', (data) => {
       <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {/* Header */}
-          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '14px', color: tealColor }}>
-  {isFinal ? 'FINAL QUESTION!' : isVisual ? 'VISUAL ROUND' : `Question ${questionNumber}`}
+<div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div>
+      <div style={{ fontSize: '14px', color: tealColor }}>
+        {isFinal ? 'FINAL QUESTION!' : isVisual ? 'VISUAL ROUND' : `Question ${questionNumber}`}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
+        <h2 style={{ color: orangeColor, fontSize: '24px', margin: '0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
+        {role && (
+          <span style={{
+            background: role === 'captain' ? '#FFD700' : '#E0E0E0',
+            color: role === 'captain' ? '#000' : '#666',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            {role === 'captain' ? '⭐ Captain' : '👁️ Viewer'}
+          </span>
+        )}
+      </div>
+    </div>
+    <div style={{ textAlign: 'right' }}>
+      <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
+      <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+    </div>
+  </div>
 </div>
-                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
-              </div>
-            </div>
-          </div>
 
           {/* Question */}
           <div style={{ background: isFinal ? '#FFF9C4' : 'white', border: isFinal ? `4px solid ${orangeColor}` : 'none', borderRadius: '15px', padding: '30px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -569,51 +599,79 @@ socket.on('player:finalQuestionReceived', (data) => {
             </div>
           )}
 
-          {/* Answer Input */}
-          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            {isVisual && imageUrl && (
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <img 
-                  src={imageUrl} 
-                  alt="Visual Question"
-                  style={{ maxWidth: '100%', height: 'auto', borderRadius: '10px', border: '2px solid ' + tealColor }}
-                />
-              </div>
-            )}
-            
-            {isVisual ? (
-              // 6 input fields for visual questions
-              <div>
-                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>Your Answers (1-6)</label>
-                {[0, 1, 2, 3, 4, 5].map(idx => (
-                  <div key={idx} style={{ marginBottom: '10px' }}>
-                    <input
-                      type="text"
-                      value={visualAnswers[idx]}
-                      onChange={(e) => {
-                        const newAnswers = [...visualAnswers];
-                        newAnswers[idx] = e.target.value;
-                        setVisualAnswers(newAnswers);
-                      }}
-                      placeholder={`Answer ${idx + 1}`}
-                      style={{ width: '90%', padding: '12px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '8px' }}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              // Regular single answer
-              <>
-                <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>Your Answer</label>
-                <textarea
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="Type your answer here..."
-                  style={{ width: '90%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '30px', resize: 'vertical' }}
-                />
-              </>
-            )}
-          </div>
+{/* Answer Input */}
+<div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', position: 'relative' }}>
+  {/* Viewer Overlay */}
+  {role === 'viewer' && (
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(255,255,255,0.95)',
+      borderRadius: '15px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      gap: '10px',
+      zIndex: 10
+    }}>
+      <div style={{ fontSize: '48px' }}>👁️</div>
+      <div style={{ fontSize: '18px', fontWeight: 'bold', color: tealColor }}>Viewing Only</div>
+      <div style={{ fontSize: '14px', color: '#666', textAlign: 'center', padding: '0 20px' }}>
+        Team captain is answering...
+      </div>
+    </div>
+  )}
+
+  {isVisual && imageUrl && (
+    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+      <img 
+        src={imageUrl} 
+        alt="Visual Question"
+        style={{ maxWidth: '100%', height: 'auto', borderRadius: '10px', border: '2px solid ' + tealColor }}
+      />
+    </div>
+  )}
+  
+  {isVisual ? (
+    // 6 input fields for visual questions
+    <div>
+      <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>Your Answers (1-6)</label>
+      {[0, 1, 2, 3, 4, 5].map(idx => (
+        <div key={idx} style={{ marginBottom: '10px' }}>
+          <input
+            type="text"
+            value={visualAnswers[idx]}
+            onChange={(e) => {
+              const newAnswers = [...visualAnswers];
+              newAnswers[idx] = e.target.value;
+              setVisualAnswers(newAnswers);
+            }}
+            placeholder={`Answer ${idx + 1}`}
+            disabled={role === 'viewer'}
+            style={{ width: '90%', padding: '12px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '8px', opacity: role === 'viewer' ? 0.5 : 1 }}
+          />
+        </div>
+      ))}
+    </div>
+  ) : (
+    // Regular single answer
+    <>
+      <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>Your Answer</label>
+      <textarea
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        placeholder="Type your answer here..."
+        disabled={role === 'viewer'}
+        style={{ width: '90%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '30px', resize: 'vertical', opacity: role === 'viewer' ? 0.5 : 1 }}
+      />
+    </>
+  )}
+</div>
+
 {/* Confidence Grid - Only show for regular non-final questions */}
 {!isFinal && !isVisual && (
   <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -628,8 +686,8 @@ socket.on('player:finalQuestionReceived', (data) => {
         return (
           <button
             key={num}
-            onClick={() => !isUsed && setSelectedConfidence(num)}
-            disabled={isUsed}
+            onClick={() => !isUsed && role !== 'viewer' && setSelectedConfidence(num)}
+            disabled={isUsed || role === 'viewer'}
             style={{
               padding: '10px',
               fontSize: '20px',
@@ -638,8 +696,9 @@ socket.on('player:finalQuestionReceived', (data) => {
               borderRadius: '10px',
               background: isUsed ? '#e0e0e0' : isSelected ? '#FFE0B2' : 'white',
               color: isUsed ? '#999' : tealColor,
-              cursor: isUsed ? 'not-allowed' : 'pointer',
-              textDecoration: isUsed ? 'line-through' : 'none'
+              cursor: (isUsed || role === 'viewer') ? 'not-allowed' : 'pointer',
+              textDecoration: isUsed ? 'line-through' : 'none',
+              opacity: role === 'viewer' ? 0.5 : 1
             }}
           >
             {num}
@@ -658,17 +717,26 @@ socket.on('player:finalQuestionReceived', (data) => {
     </p>
   </div>
 )}
-          {/* Submit Button */}
-          <button
-            onClick={submitAnswer}
-            style={{ width: '100%', padding: '20px', fontSize: '22px', fontWeight: 'bold', background: blueButton, color: 'white', border: 'none', borderRadius: '15px', cursor: 'pointer', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}
-          >
-            Submit Answer
-          </button>
-        </div>
-      </div>
-    );
-  }
+{/* Submit Button */}
+<button
+  onClick={submitAnswer}
+  disabled={role === 'viewer'}
+  style={{ 
+    width: '100%', 
+    padding: '20px', 
+    fontSize: '22px', 
+    fontWeight: 'bold', 
+    background: role === 'viewer' ? '#ccc' : blueButton, 
+    color: 'white', 
+    border: 'none', 
+    borderRadius: '15px', 
+    cursor: role === 'viewer' ? 'not-allowed' : 'pointer', 
+    boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+    opacity: role === 'viewer' ? 0.6 : 1
+  }}
+>
+  {role === 'viewer' ? 'Captain is Answering...' : 'Submit Answer'}
+</button>
 
   // Submitted Screen
   if (screen === 'question' && submitted) {
@@ -681,19 +749,33 @@ socket.on('player:finalQuestionReceived', (data) => {
         <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <Logo />
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-            {/* Header */}
-            <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION' : `Question ${questionNumber}`}</div>
-                  <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
-                  <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
-                </div>
-              </div>
-            </div>
+{/* Header */}
+<div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div>
+      <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION' : `Question ${questionNumber}`}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
+        <h2 style={{ color: orangeColor, fontSize: '24px', margin: '0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
+        {role && (
+          <span style={{
+            background: role === 'captain' ? '#FFD700' : '#E0E0E0',
+            color: role === 'captain' ? '#000' : '#666',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            {role === 'captain' ? '⭐ Captain' : '👁️ Viewer'}
+          </span>
+        )}
+      </div>
+    </div>
+    <div style={{ textAlign: 'right' }}>
+      <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
+      <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+    </div>
+  </div>
+</div>
 
             {/* Result Message */}
             <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -720,19 +802,33 @@ socket.on('player:finalQuestionReceived', (data) => {
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          {/* Header */}
-          <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION' : `Question ${questionNumber}`}</div>
-                <h2 style={{ color: orangeColor, fontSize: '24px', margin: '5px 0 0 0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
-              </div>
-            </div>
-          </div>
+{/* Header */}
+<div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div>
+      <div style={{ fontSize: '14px', color: tealColor }}>{isFinal ? 'FINAL QUESTION' : `Question ${questionNumber}`}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
+        <h2 style={{ color: orangeColor, fontSize: '24px', margin: '0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
+        {role && (
+          <span style={{
+            background: role === 'captain' ? '#FFD700' : '#E0E0E0',
+            color: role === 'captain' ? '#000' : '#666',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            {role === 'captain' ? '⭐ Captain' : '👁️ Viewer'}
+          </span>
+        )}
+      </div>
+    </div>
+    <div style={{ textAlign: 'right' }}>
+      <div style={{ fontSize: '14px', color: tealColor }}>Score</div>
+      <div style={{ fontSize: '32px', fontWeight: 'bold', color: tealColor }}>{myScore}</div>
+    </div>
+  </div>
+</div>
 
           {/* Submitted Message */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
