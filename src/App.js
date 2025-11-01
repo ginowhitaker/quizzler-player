@@ -397,7 +397,7 @@ socket.on('player:finalQuestionReceived', (data) => {
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {/* Header */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <h2 style={{ color: orangeColor, fontSize: '28px', margin: '0', fontFamily: 'Gabarito, sans-serif' }}>{teamName}</h2>
                 <p style={{ color: tealColor, margin: '5px 0 0 0' }}>Game: <strong>{gameCode}</strong></p>
