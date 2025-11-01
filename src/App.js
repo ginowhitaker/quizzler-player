@@ -735,8 +735,12 @@ socket.on('player:finalQuestionReceived', (data) => {
     opacity: role === 'viewer' ? 0.6 : 1
   }}
 >
-  {role === 'viewer' ? 'Captain is Answering...' : 'Submit Answer'}
+{role === 'viewer' ? 'Captain is Answering...' : 'Submit Answer'}
 </button>
+        </div>
+      </div>
+    );
+  }
 
   // Submitted Screen
   if (screen === 'question' && submitted) {
