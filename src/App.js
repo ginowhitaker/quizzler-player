@@ -343,7 +343,7 @@ socket.on('player:finalQuestionReceived', (data) => {
   // Join Screen
   if (screen === 'join') {
     return (
-      <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+      <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <div style={{ background: 'white', borderRadius: '20px', padding: '30px', maxWidth: '450px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
          <img 
   src="https://quizzler.pro/img/quizzler_logo.png" 
@@ -445,7 +445,7 @@ socket.on('player:finalQuestionReceived', (data) => {
       border: team.name === teamName ? `3px solid ${orangeColor}` : 'none',
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center'
+      alignItems: 'flex-start'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
         <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#999' }}>#{idx + 1}</span>
