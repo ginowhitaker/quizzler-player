@@ -124,6 +124,18 @@ socket.on('player:joined', (data) => {
   }
 });
 
+socket.on('player:captainChanged', (data) => {
+  console.log('Captain changed:', data);
+  
+  // Check if THIS socket is the new captain
+  if (socket.id === data.newCaptainSocketId) {
+    setRole('captain');
+    alert('⭐ You are now the team captain!');
+  } else {
+    setRole('viewer');
+  }
+});
+
     socket.on('player:questionReceived', (data) => {
       setCurrentQuestion(data.question);
       setQuestionNumber(data.questionNumber);
@@ -201,6 +213,7 @@ socket.on('player:finalQuestionReceived', (data) => {
       socket.off('player:gameCompleted');
       socket.off('player:finalCategoryReceived');
       socket.off('player:finalQuestionReceived');
+      socket.off('player:captainChanged');
     };
   }, [socket, teamName, isFinal, selectedConfidence]);
 
