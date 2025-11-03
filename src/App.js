@@ -8,6 +8,8 @@ export default function PlayerApp() {
   const [screen, setScreen] = useState('join');
   const [gameCode, setGameCode] = useState('');
   const [teamName, setTeamName] = useState('');
+  const [playerName, setPlayerName] = useState('');
+  const [approvalRequest, setApprovalRequest] = useState(null);
   const [role, setRole] = useState(null);
   const [teams, setTeams] = useState([]);
   const [venueName, setVenueName] = useState('');
@@ -136,6 +138,34 @@ socket.on('player:captainChanged', (data) => {
   }
 });
 
+// NEW: Waiting for captain approval
+socket.on('player:waitingApproval', (data) => {
+  console.log('Waiting for approval:', data);
+  setScreen('waitingApproval');
+});
+
+// NEW: Approval granted
+socket.on('player:approved', (data) => {
+  console.log('Approved!', data);
+  // Re-trigger join now that we're approved
+  socket.emit('player:join', { 
+    gameCode: data.gameCode, 
+    teamName: data.teamName,
+    playerName: data.playerName
+  });
+});
+
+// NEW: Approval denied
+socket.on('player:denied', (data) => {
+  alert(`Request denied: ${data.message}`);
+  setScreen('join');
+});
+
+// NEW: Captain receives approval request
+socket.on('player:approvalRequest', (data) => {
+  setApprovalRequest(data);
+});
+
     socket.on('player:questionReceived', (data) => {
       setCurrentQuestion(data.question);
       setQuestionNumber(data.questionNumber);
@@ -214,6 +244,10 @@ socket.on('player:finalQuestionReceived', (data) => {
       socket.off('player:finalCategoryReceived');
       socket.off('player:finalQuestionReceived');
       socket.off('player:captainChanged');
+      socket.off('player:waitingApproval');
+      socket.off('player:approved');
+      socket.off('player:denied');
+      socket.off('player:approvalRequest');
     };
   }, [socket, teamName, isFinal, selectedConfidence]);
 
@@ -234,16 +268,17 @@ socket.on('player:finalQuestionReceived', (data) => {
     return () => clearInterval(interval);
   }, [timerActive, timeRemaining]);
 
-  const joinGame = () => {
-    if (!gameCode || !teamName) {
-      alert('Please enter both game code and team name');
-      return;
-    }
-    socket.emit('player:join', { 
-      gameCode: gameCode.toUpperCase(), 
-      teamName 
-    });
-  };
+const joinGame = () => {
+  if (!gameCode || !teamName || !playerName) {
+    alert('Please enter game code, team name, and your name');
+    return;
+  }
+  socket.emit('player:join', { 
+    gameCode: gameCode.toUpperCase(), 
+    teamName,
+    playerName  // ADD THIS
+  });
+};
 
   const submitAnswer = () => {
     if (isVisual) {
@@ -379,13 +414,24 @@ socket.on('player:finalQuestionReceived', (data) => {
             />
           </div>
           
-          <div style={{ marginBottom: '30px' }}>
+          <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', fontFamily: 'Gabarito, sans-serif' }}>Team Name</label>
             <input
               type="text"
               placeholder="Your team name"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
+              style={{ width: '90%', padding: '15px', fontSize: '18px', border: `2px solid ${tealColor}`, borderRadius: '10px' }}
+            />
+          </div>
+
+          <div style={{ marginBottom: '30px' }}>
+            <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', fontFamily: 'Gabarito, sans-serif' }}>Your Name</label>
+            <input
+              type="text"
+              placeholder="Your name"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
               style={{ width: '90%', padding: '15px', fontSize: '18px', border: `2px solid ${tealColor}`, borderRadius: '10px' }}
             />
           </div>
@@ -396,12 +442,113 @@ socket.on('player:finalQuestionReceived', (data) => {
           >
             Join Game
           </button>
+Save and show me when done! 🔧RetryClaude can make mistakes. Please double-check responses.
         </div>
       </div>
     );
   }
 
-  // Waiting Screen
+// Waiting for Captain Approval Screen
+  if (screen === 'waitingApproval') {
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <Logo />
+        
+        if (screen === 'waiting') {
+    const leaderboard = getLeaderboard();
+    const myScore = teams.find(t => t.name === teamName)?.score || 0;
+
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <Logo />
+        
+        {/* Approval Request Banner - Only show if captain */}
+        {role === 'captain' && approvalRequest && (
+          <div style={{ 
+            maxWidth: '600px', 
+            margin: '0 auto 20px auto',
+            background: '#FFF9C4',
+            border: '3px solid #FFB300',
+            borderRadius: '15px',
+            padding: '20px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+          }}>
+            <h3 style={{ color: '#F57C00', fontSize: '18px', marginBottom: '10px' }}>
+              👋 Join Request
+            </h3>
+            <p style={{ color: '#333', marginBottom: '15px' }}>
+              <strong>{approvalRequest.playerName}</strong> wants to join your team as a viewer
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  socket.emit('player:approveViewer', {
+                    gameCode,
+                    teamName,
+                    requestSocketId: approvalRequest.requestSocketId,
+                    playerName: approvalRequest.playerName
+                  });
+                  setApprovalRequest(null);
+                }}
+                style={{ 
+                  flex: 1,
+                  padding: '12px',
+                  background: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                ✓ Approve
+              </button>
+              <button
+                onClick={() => {
+                  socket.emit('player:denyViewer', {
+                    requestSocketId: approvalRequest.requestSocketId,
+                    playerName: approvalRequest.playerName,
+                    teamName
+                  });
+                  setApprovalRequest(null);
+                }}
+                style={{ 
+                  flex: 1,
+                  padding: '12px',
+                  background: '#F44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                ✗ Deny
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏳</div>
+            <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Gabarito, sans-serif' }}>
+              Waiting for Approval
+            </h2>
+            <p style={{ color: '#666', fontSize: '18px', marginBottom: '10px' }}>
+              {playerName}, you've requested to join <strong>{teamName}</strong>
+            </p>
+            <p style={{ color: '#666', fontSize: '16px' }}>
+              The team captain will approve your request shortly...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (screen === 'waiting') {
     const leaderboard = getLeaderboard();
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
