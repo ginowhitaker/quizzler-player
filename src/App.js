@@ -254,6 +254,7 @@ socket.on('player:finalQuestionReceived', (data) => {
       socket.off('player:answerMarked');
       socket.off('player:scoresUpdated');
       socket.off('player:gameCompleted');
+      socket.off('player:standingsReceived');
       socket.off('player:finalCategoryReceived');
       socket.off('player:finalQuestionReceived');
       socket.off('player:captainChanged');
@@ -403,6 +404,126 @@ const joinGame = () => {
     </div>
   );
 
+  // Standings Overlay Component
+  const StandingsOverlay = () => {
+    if (!showStandings) return null;
+    
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.85)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10000,
+        padding: '20px'
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '20px',
+          padding: '40px',
+          maxWidth: '600px',
+          width: '100%',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <div style={{ fontSize: '64px', marginBottom: '10px' }}>🏆</div>
+            <h2 style={{ 
+              fontFamily: 'Gabarito, sans-serif', 
+              fontSize: '36px', 
+              color: tealColor, 
+              margin: '0 0 10px 0' 
+            }}>
+              Current Standings
+            </h2>
+          </div>
+
+          <div>
+            {standings.map((team, idx) => {
+              const isMyTeam = team.name === teamName;
+              const isFirst = idx === 0;
+              
+              return (
+                <div key={team.name} style={{ 
+                  background: isFirst ? '#FFF9C4' : isMyTeam ? '#E3F2FD' : '#f5f5f5',
+                  border: isFirst ? `4px solid ${orangeColor}` : isMyTeam ? `3px solid ${tealColor}` : 'none',
+                  padding: '20px',
+                  borderRadius: '15px',
+                  marginBottom: '15px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <span style={{ 
+                      fontSize: '28px', 
+                      fontWeight: 'bold', 
+                      color: '#999',
+                      minWidth: '40px'
+                    }}>
+                      #{idx + 1}
+                    </span>
+                    {isFirst && <span style={{ fontSize: '32px' }}>👑</span>}
+                    <div>
+                      <div style={{ 
+                        fontSize: '22px', 
+                        fontWeight: 'bold', 
+                        color: tealColor,
+                        fontFamily: 'Gabarito, sans-serif'
+                      }}>
+                        {team.name}
+                      </div>
+                      {isMyTeam && (
+                        <div style={{ 
+                          color: orangeColor, 
+                          fontWeight: 'bold',
+                          fontSize: '14px'
+                        }}>
+                          Your Team
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ 
+                    fontSize: '36px', 
+                    fontWeight: 'bold', 
+                    color: orangeColor,
+                    fontFamily: 'Gabarito, sans-serif'
+                  }}>
+                    {team.score}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => setShowStandings(false)}
+            style={{
+              width: '100%',
+              marginTop: '20px',
+              padding: '15px',
+              background: tealColor,
+              color: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              fontFamily: 'Gabarito, sans-serif'
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   // Join Screen
   if (screen === 'join') {
     return (
@@ -491,6 +612,8 @@ const joinGame = () => {
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
 
     return (
+      <>
+      <StandingsOverlay />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <Logo />
         
@@ -672,6 +795,7 @@ const joinGame = () => {
 */}
         </div>
       </div>
+      </>
     );
   }
 // Final Wager Screen
@@ -746,6 +870,8 @@ const joinGame = () => {
       : Array.from({ length: 15 }, (_, i) => i + 1);
 
     return (
+      <>
+      <StandingsOverlay />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -938,6 +1064,7 @@ const joinGame = () => {
 </button>
         </div>
       </div>
+      </>
     );
   }
 
@@ -1062,6 +1189,8 @@ if (screen === 'results') {
   const wasCorrect = isVisualResult ? pointsEarned > 0 : answerResult === 'correct';
   
   return (
+    <>
+    <StandingsOverlay />
     <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
     <Logo />
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -1145,6 +1274,7 @@ if (screen === 'results') {
         </div>
       </div>
     </div>
+    </>
   );
 }
   // Game Complete
@@ -1152,6 +1282,8 @@ if (screen === 'results') {
     const leaderboard = getLeaderboard();
 
     return (
+      <>
+      <StandingsOverlay />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: '600px', width: '100%' }}>
           <Logo />        
@@ -1198,124 +1330,7 @@ if (screen === 'results') {
           </div>
         </div>
       </div>
-    );
-  }
-
-  // Standings Modal Overlay
-  if (showStandings) {
-    return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.85)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999,
-        padding: '20px'
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '20px',
-          padding: '40px',
-          maxWidth: '600px',
-          width: '100%',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '10px' }}>🏆</div>
-            <h2 style={{ 
-              fontFamily: 'Gabarito, sans-serif', 
-              fontSize: '36px', 
-              color: tealColor, 
-              margin: '0 0 10px 0' 
-            }}>
-              Current Standings
-            </h2>
-          </div>
-
-          <div>
-            {standings.map((team, idx) => {
-              const isMyTeam = team.name === teamName;
-              const isFirst = idx === 0;
-              
-              return (
-                <div key={team.name} style={{ 
-                  background: isFirst ? '#FFF9C4' : isMyTeam ? '#E3F2FD' : '#f5f5f5',
-                  border: isFirst ? `4px solid ${orangeColor}` : isMyTeam ? `3px solid ${tealColor}` : 'none',
-                  padding: '20px',
-                  borderRadius: '15px',
-                  marginBottom: '15px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <span style={{ 
-                      fontSize: '28px', 
-                      fontWeight: 'bold', 
-                      color: '#999',
-                      minWidth: '40px'
-                    }}>
-                      #{idx + 1}
-                    </span>
-                    {isFirst && <span style={{ fontSize: '32px' }}>👑</span>}
-                    <div>
-                      <div style={{ 
-                        fontSize: '22px', 
-                        fontWeight: 'bold', 
-                        color: tealColor,
-                        fontFamily: 'Gabarito, sans-serif'
-                      }}>
-                        {team.name}
-                      </div>
-                      {isMyTeam && (
-                        <div style={{ 
-                          color: orangeColor, 
-                          fontWeight: 'bold',
-                          fontSize: '14px'
-                        }}>
-                          Your Team
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ 
-                    fontSize: '36px', 
-                    fontWeight: 'bold', 
-                    color: orangeColor,
-                    fontFamily: 'Gabarito, sans-serif'
-                  }}>
-                    {team.score}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <button
-            onClick={() => setShowStandings(false)}
-            style={{
-              width: '100%',
-              marginTop: '20px',
-              padding: '15px',
-              background: tealColor,
-              color: 'white',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              fontFamily: 'Gabarito, sans-serif'
-            }}
-          >
-            Close
-          </button>
-        </div>
-      </div>
+      </>
     );
   }
 
