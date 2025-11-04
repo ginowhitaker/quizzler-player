@@ -609,7 +609,7 @@ const joinGame = () => {
       <li style={{ marginBottom: '8px' }}>
         Visual Round: Identify 6 images worth 1 point to earn up to 6 points
       </li>
-      <li style={{ marginBottom: '8x' }}>
+      <li style={{ marginBottom: '8px' }}>
         Final Round Question - wager up to 30 points
       </li>
       <li style={{ marginBottom: '8px' }}>
@@ -626,7 +626,7 @@ const joinGame = () => {
 {questionNumber === 0 && venueSpecials && (
   <div style={{ background: '#FFF9C4', border: '3px solid #FFB300', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
     <h3 style={{ color: '#F57C00', fontSize: '22px', marginBottom: '15px', fontFamily: 'Gabarito, sans-serif', textAlign: 'center' }}>
-      🍹 Tonight's Specials at {venueName} 🍹
+      Tonight's Specials at {venueName}
     </h3>
     <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#333', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
       {venueSpecials}
