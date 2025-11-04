@@ -444,7 +444,7 @@ const joinGame = () => {
           >
             Join Game
           </button>
-
+Save and show me when done! 🔧RetryClaude can make mistakes. Please double-check responses.
         </div>
       </div>
     );
@@ -754,6 +754,17 @@ const joinGame = () => {
             </div>
           )}
 
+{/* Visual Image - Outside answer container so viewers can see it */}
+{isVisual && imageUrl && (
+  <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', textAlign: 'center' }}>
+    <img 
+      src={imageUrl} 
+      alt="Visual Question"
+      style={{ maxWidth: '100%', height: 'auto', borderRadius: '10px', border: '2px solid ' + tealColor }}
+    />
+  </div>
+)}
+
 {/* Answer Input */}
 <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', position: 'relative' }}>
   {/* Viewer Overlay */}
@@ -781,16 +792,6 @@ const joinGame = () => {
     </div>
   )}
 
-  {isVisual && imageUrl && (
-    <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-      <img 
-        src={imageUrl} 
-        alt="Visual Question"
-        style={{ maxWidth: '100%', height: 'auto', borderRadius: '10px', border: '2px solid ' + tealColor }}
-      />
-    </div>
-  )}
-  
   {isVisual ? (
     // 6 input fields for visual questions
     <div>
