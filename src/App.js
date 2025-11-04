@@ -444,7 +444,7 @@ const joinGame = () => {
           >
             Join Game
           </button>
-Save and show me when done! 🔧RetryClaude can make mistakes. Please double-check responses.
+
         </div>
       </div>
     );
