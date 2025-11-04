@@ -582,7 +582,6 @@ const joinGame = () => {
 
           {/* Waiting Message */}
 <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-  <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏳</div>
   <h2 style={{ color: tealColor, fontSize: '24px', marginBottom: '10px' }}>
     {questionNumber === 0 ? 'Waiting for Game to Start...' : 'Waiting for Next Question...'}
   </h2>
@@ -590,6 +589,38 @@ const joinGame = () => {
     {questionNumber === 0 ? 'The host will start the game shortly' : 'The host will push the question when ready'}
   </p>
 </div>
+
+{/* Rules - Show before first question */}
+{questionNumber === 0 && (
+  <div style={{ background: 'white', border: '3px solid ' + tealColor, borderRadius: '15px', padding: '30px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+    <h3 style={{ color: tealColor, fontSize: '22px', marginBottom: '20px', fontFamily: 'Gabarito, sans-serif', textAlign: 'center', fontWeight: 'bold' }}>
+    QUIZZLER TRIVIA RULES
+    </h3>
+    <div style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+      <div style={{ marginBottom: '12px' }}>
+        <strong>•</strong> 15 Questions, plus a Visual Round and a Final Question
+      </div>
+      <div style={{ marginBottom: '12px' }}>
+        <strong>•</strong> Regular Questions worth between 1-15 points
+      </div>
+      <div style={{ marginBottom: '12px' }}>
+        <strong>•</strong> Assign Confidence Points for each question
+      </div>
+      <div style={{ marginBottom: '12px' }}>
+        <strong>•</strong> Visual Round: Identify 6 images worth 1 point to earn up to 6 points
+      </div>
+      <div style={{ marginBottom: '12px' }}>
+        <strong>•</strong> Final Round Question - wager up to 30 points
+      </div>
+      <div style={{ marginBottom: '12px' }}>
+        <strong>•</strong> Final Round wager will add or deduct points from your final score based on correctness
+      </div>
+      <div>
+        <strong>•</strong> Teams with the most points at the end wins the game
+      </div>
+    </div>
+  </div>
+)}
 
 {/* Venue Specials - Show before first question */}
 {questionNumber === 0 && venueSpecials && (
