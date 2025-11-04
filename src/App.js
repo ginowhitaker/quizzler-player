@@ -180,6 +180,11 @@ socket.on('player:approvalRequest', (data) => {
       setSubmitted(false);
       setAnswerResult(null);
       
+      // If this is a resent question, update usedConfidences to restore the point
+      if (data.resent && data.usedConfidences !== undefined) {
+        setUsedConfidences(data.usedConfidences);
+      }
+      
       // Initialize timer if present
       if (data.timerDuration && data.timerDuration > 0) {
         setTimerDuration(data.timerDuration);
