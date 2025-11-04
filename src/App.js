@@ -169,6 +169,12 @@ socket.on('player:approvalRequest', (data) => {
 });
 
     socket.on('player:questionReceived', (data) => {
+      // If this is a resent question, check if it's for this team
+      if (data.resent && data.forTeam && data.forTeam !== teamName) {
+        console.log(`Ignoring resent question - it's for ${data.forTeam}, not ${teamName}`);
+        return; // Ignore questions resent to other teams
+      }
+      
       setCurrentQuestion(data.question);
       setQuestionNumber(data.questionNumber);
       setIsFinal(data.isFinal);
