@@ -593,29 +593,29 @@ const joinGame = () => {
 {/* Rules - Show before first question */}
 {questionNumber === 0 && (
   <div style={{ background: 'white', border: '3px solid ' + tealColor, borderRadius: '15px', padding: '30px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-    <h3 style={{ color: tealColor, fontSize: '22px', marginBottom: '20px', fontFamily: 'Gabarito, sans-serif', textAlign: 'center', fontWeight: 'bold' }}>
+    <h3 style={{ color: tealColor, fontSize: '22px', marginBottom: '12px', fontFamily: 'Gabarito, sans-serif', textAlign: 'center', fontWeight: 'bold' }}>
     QUIZZLER TRIVIA RULES
     </h3>
-    <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
-      <li style={{ marginBottom: '10px' }}>
+    <ul style={{ fontSize: '16px', lineHeight: '1.4', color: '#333' }}>
+      <li style={{ marginBottom: '8px' }}>
         15 Questions, plus a Visual Round and a Final Question
       </li>
-      <li style={{ marginBottom: '10px' }}>
+      <li style={{ marginBottom: '8px' }}>
        Regular Questions worth between 1-15 points
       </li>
-      <li style={{ marginBottom: '10px' }}>
+      <li style={{ marginBottom: '8px' }}>
         Assign Confidence Points for each question
       </li>
-      <li style={{ marginBottom: '10px' }}>
+      <li style={{ marginBottom: '8px' }}>
         Visual Round: Identify 6 images worth 1 point to earn up to 6 points
       </li>
-      <li style={{ marginBottom: '10px' }}>
+      <li style={{ marginBottom: '8x' }}>
         Final Round Question - wager up to 30 points
       </li>
-      <li style={{ marginBottom: '10px' }}>
+      <li style={{ marginBottom: '8px' }}>
         Final Round wager will add or deduct points from your final score based on correctness
       </li>
-      <li style={{ marginBottom: '10px' }}>
+      <li style={{ marginBottom: '8px' }}>
         Teams with the most points at the end wins the game
       </li>
       </ul>
