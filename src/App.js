@@ -314,8 +314,8 @@ const joinGame = () => {
           return;
         }
       } else {
-        if (selectedConfidence === null || selectedConfidence < 0 || selectedConfidence > 20) {
-          alert('Please select a wager between 0 and 20');
+        if (selectedConfidence === null || selectedConfidence < 0 || selectedConfidence > 30) {
+          alert('Please select a wager between 0 and 30');
           return;
         }
       }
@@ -335,8 +335,8 @@ const joinGame = () => {
   };
     
   const submitWager = () => {
-    if (wager < 0 || wager > 20) {
-      alert('Wager must be between 0 and 20 points');
+    if (wager < 0 || wager > 30) {
+      alert('Wager must be between 0 and 30 points');
       return;
     }
     
@@ -405,11 +405,13 @@ const joinGame = () => {
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '8px', fontFamily: 'Gabarito, sans-serif' }}>Game Code</label>
             <input
-              type="text"
+              type="tel"
+              pattern="[0-9]*"
+              inputMode="numeric"
               placeholder="Enter code"
               value={gameCode}
               onChange={(e) => setGameCode(e.target.value.toUpperCase())}
-              maxLength={6}
+              maxLength={4}
               style={{ width: '90%', padding: '15px', fontSize: '24px', textAlign: 'center', border: `2px solid ${tealColor}`, borderRadius: '10px', fontFamily: 'Gabarito, sans-serif', fontWeight: 'bold' }}
             />
           </div>
@@ -819,7 +821,7 @@ Save and show me when done! 🔧RetryClaude can make mistakes. Please double-che
         onChange={(e) => setAnswer(e.target.value)}
         placeholder="Type your answer here..."
         disabled={role === 'viewer'}
-        style={{ width: '90%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '30px', resize: 'vertical', opacity: role === 'viewer' ? 0.5 : 1 }}
+        style={{ width: '90%', padding: '15px', fontSize: '16px', border: `2px solid ${tealColor}`, borderRadius: '10px', minHeight: '30px', resize: 'none', opacity: role === 'viewer' ? 0.5 : 1 }}
       />
     </>
   )}
