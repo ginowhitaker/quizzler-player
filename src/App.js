@@ -453,8 +453,26 @@ Save and show me when done! 🔧RetryClaude can make mistakes. Please double-che
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <Logo />
-        
-        if (screen === 'waiting') {
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏳</div>
+            <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Gabarito, sans-serif' }}>
+              Waiting for Approval
+            </h2>
+            <p style={{ color: '#666', fontSize: '18px', marginBottom: '10px' }}>
+              {playerName}, you've requested to join <strong>{teamName}</strong>
+            </p>
+            <p style={{ color: '#666', fontSize: '16px' }}>
+              The team captain will approve your request shortly...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Waiting Screen
+  if (screen === 'waiting') {
     const leaderboard = getLeaderboard();
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
 
@@ -531,31 +549,6 @@ Save and show me when done! 🔧RetryClaude can make mistakes. Please double-che
           </div>
         )}
 
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-            <div style={{ fontSize: '64px', marginBottom: '20px' }}>⏳</div>
-            <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Gabarito, sans-serif' }}>
-              Waiting for Approval
-            </h2>
-            <p style={{ color: '#666', fontSize: '18px', marginBottom: '10px' }}>
-              {playerName}, you've requested to join <strong>{teamName}</strong>
-            </p>
-            <p style={{ color: '#666', fontSize: '16px' }}>
-              The team captain will approve your request shortly...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (screen === 'waiting') {
-    const leaderboard = getLeaderboard();
-    const myScore = teams.find(t => t.name === teamName)?.score || 0;
-
-    return (
-      <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
-      <Logo />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
 {/* Header */}
 <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
