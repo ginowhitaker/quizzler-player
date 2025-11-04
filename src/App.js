@@ -596,29 +596,29 @@ const joinGame = () => {
     <h3 style={{ color: tealColor, fontSize: '22px', marginBottom: '20px', fontFamily: 'Gabarito, sans-serif', textAlign: 'center', fontWeight: 'bold' }}>
     QUIZZLER TRIVIA RULES
     </h3>
-    <div style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
-      <div style={{ marginBottom: '12px' }}>
-        <strong>•</strong> 15 Questions, plus a Visual Round and a Final Question
-      </div>
-      <div style={{ marginBottom: '12px' }}>
-        <strong>•</strong> Regular Questions worth between 1-15 points
-      </div>
-      <div style={{ marginBottom: '12px' }}>
-        <strong>•</strong> Assign Confidence Points for each question
-      </div>
-      <div style={{ marginBottom: '12px' }}>
-        <strong>•</strong> Visual Round: Identify 6 images worth 1 point to earn up to 6 points
-      </div>
-      <div style={{ marginBottom: '12px' }}>
-        <strong>•</strong> Final Round Question - wager up to 30 points
-      </div>
-      <div style={{ marginBottom: '12px' }}>
-        <strong>•</strong> Final Round wager will add or deduct points from your final score based on correctness
-      </div>
-      <div>
-        <strong>•</strong> Teams with the most points at the end wins the game
-      </div>
-    </div>
+    <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+      <li style={{ marginBottom: '10px' }}>
+        15 Questions, plus a Visual Round and a Final Question
+      </li>
+      <li style={{ marginBottom: '10px' }}>
+       Regular Questions worth between 1-15 points
+      </li>
+      <li style={{ marginBottom: '10px' }}>
+        Assign Confidence Points for each question
+      </li>
+      <li style={{ marginBottom: '10px' }}>
+        Visual Round: Identify 6 images worth 1 point to earn up to 6 points
+      </li>
+      <li style={{ marginBottom: '10px' }}>
+        Final Round Question - wager up to 30 points
+      </li>
+      <li style={{ marginBottom: '10px' }}>
+        Final Round wager will add or deduct points from your final score based on correctness
+      </li>
+      <li style={{ marginBottom: '10px' }}>
+        Teams with the most points at the end wins the game
+      </li>
+      </ul>
   </div>
 )}
 
