@@ -30,6 +30,7 @@ export default function PlayerApp() {
   const [submitted, setSubmitted] = useState(false);
   const [answerResult, setAnswerResult] = useState(null); // null, 'correct', or 'incorrect'
   const submittedRef = useRef(false);
+  // eslint-disable-next-line no-unused-vars
   const [timerDuration, setTimerDuration] = useState(0); // Total timer duration in seconds
   const [timeRemaining, setTimeRemaining] = useState(0); // Current countdown
   const [timerActive, setTimerActive] = useState(false);
@@ -104,6 +105,7 @@ useEffect(() => {
   });
   
   return () => newSocket.close();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
 
   useEffect(() => {
@@ -113,6 +115,7 @@ socket.on('player:joined', (data) => {
   console.log('Joined game:', data);
   setRole(data.role); // ADD THIS LINE
   setTeams(data.teams);
+  // eslint-disable-next-line no-unused-vars
   const myTeam = data.teams.find(t => t.name === teamName);
   setUsedConfidences(data.usedConfidences || []);
   setVenueName(data.venueName || '');
@@ -274,6 +277,7 @@ socket.on('player:finalQuestionReceived', (data) => {
       socket.off('player:denied');
       socket.off('player:approvalRequest');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, teamName, isFinal, selectedConfidence]);
 
   // Timer countdown
@@ -619,6 +623,7 @@ const joinGame = () => {
 
   // Waiting Screen
   if (screen === 'waiting') {
+    // eslint-disable-next-line no-unused-vars
     const leaderboard = getLeaderboard();
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
 
