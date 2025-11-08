@@ -229,6 +229,27 @@ socket.on('player:answerMarked', (data) => {
   setTeams(data.teams);
 });
 
+    // Handle answer corrections from host (via team history)
+    socket.on('player:answerCorrected', (data) => {
+      console.log('Answer corrected by host:', data);
+      
+      // Only update if we're currently viewing the results screen
+      if (screen === 'results') {
+        if (data.visualIndex !== undefined) {
+          // Visual question - update specific answer
+          setAnswerResult(prev => ({
+            ...prev,
+            visualResults: prev.visualResults.map((result, idx) => 
+              idx === data.visualIndex ? data.correct : result
+            )
+          }));
+        } else {
+          // Regular or final question - update correct/incorrect
+          setAnswerResult(data.correct ? 'correct' : 'incorrect');
+        }
+      }
+    });
+
     socket.on('player:gameCompleted', (data) => {
       setTeams(data.teams);
       setScreen('completed');
@@ -267,6 +288,7 @@ socket.on('player:finalQuestionReceived', (data) => {
       socket.off('player:answerSubmitted');
       socket.off('player:answerMarked');
       socket.off('player:scoresUpdated');
+      socket.off('player:answerCorrected');
       socket.off('player:gameCompleted');
       socket.off('player:standingsReceived');
       socket.off('player:finalCategoryReceived');
