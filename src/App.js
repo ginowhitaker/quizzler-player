@@ -229,33 +229,31 @@ socket.on('player:answerMarked', (data) => {
   setTeams(data.teams);
 });
 
-    // Handle answer corrections from host (via team history)
-socket.on('player:answerCorrected', (data) => {
-  console.log('Answer corrected by host:', data);
-  console.log('Current screen:', screen);
-  console.log('Current answerResult:', answerResult);
-  
-  // Only update if we're currently viewing the results screen
-  if (screen === 'results') {
-    console.log('✓ On results screen, updating...');
-    if (data.visualIndex !== undefined) {
-      // Visual question - update specific answer
-      setAnswerResult(prev => ({
-        ...prev,
-        visualResults: prev.visualResults.map((result, idx) => 
-          idx === data.visualIndex ? data.correct : result
-        )
-      }));
-    } else {
-      // Regular or final question - update correct/incorrect
-      const newResult = data.correct ? 'correct' : 'incorrect';
-      console.log('Setting answerResult to:', newResult);
-      setAnswerResult(newResult);
-    }
-  } else {
-    console.log('✗ Not on results screen, screen is:', screen);
-  }
-});
+// Handle answer corrections from host (via team history)
+    socket.on('player:answerCorrected', (data) => {
+      console.log('Answer corrected by host:', data);
+      console.log('Current answerResult before:', answerResult);
+      
+      // Always update answerResult - works for both 'question' and 'results' screens
+      if (data.visualIndex !== undefined) {
+        // Visual question - update specific answer
+        setAnswerResult(prev => {
+          const newResult = {
+            ...prev,
+            visualResults: prev.visualResults.map((result, idx) => 
+              idx === data.visualIndex ? data.correct : result
+            )
+          };
+          console.log('Updated visual result:', newResult);
+          return newResult;
+        });
+      } else {
+        // Regular or final question - update correct/incorrect
+        const newResult = data.correct ? 'correct' : 'incorrect';
+        console.log('Setting answerResult to:', newResult);
+        setAnswerResult(newResult);
+      }
+    });
     socket.on('player:gameCompleted', (data) => {
       setTeams(data.teams);
       setScreen('completed');
