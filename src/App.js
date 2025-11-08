@@ -840,14 +840,14 @@ const joinGame = () => {
           {!wagerSubmitted ? (
             <div style={{ background: 'white', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
               <h3 style={{ color: tealColor, fontSize: '22px', marginBottom: '20px', textAlign: 'center' }}>How confident are you?</h3>
-              <p style={{ color: '#666', textAlign: 'center', marginBottom: '20px' }}>Wager up to 20 points!</p>
+              <p style={{ color: '#666', textAlign: 'center', marginBottom: '20px' }}>Wager up to 30 points!</p>
               
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', color: tealColor, fontWeight: 'bold', marginBottom: '10px', fontSize: '18px', fontFamily: 'Gabarito, sans-serif' }}>Your Wager</label>
                 <input
                   type="number"
                   min="0"
-                  max="20"
+                  max="30"
                   value={wager}
                   onChange={(e) => setWager(parseInt(e.target.value) || 0)}
                   style={{ width: '90%', padding: '20px', fontSize: '32px', textAlign: 'center', border: `3px solid ${tealColor}`, borderRadius: '10px', fontWeight: 'bold' }}
@@ -877,7 +877,7 @@ const joinGame = () => {
   if (screen === 'question' && !submitted) {
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
     const confidenceOptions = isFinal 
-      ? Array.from({ length: 21 }, (_, i) => i)
+      ? Array.from({ length: 31 }, (_, i) => i)
       : Array.from({ length: 15 }, (_, i) => i + 1);
 
     return (
