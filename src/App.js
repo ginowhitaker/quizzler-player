@@ -601,20 +601,20 @@ const joinGame = () => {
                 <div style={{
                   background: orangeColor,
                   color: 'white',
-                  width: '40px',
-                  height: '40px',
+                  width: '22px',
+                  height: '22px',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fontWeight: 'bold',
                   flexShrink: 0
                 }}>
                   {cat.number}
                 </div>
                 <div style={{
-                  fontSize: '16px',
+                  fontSize: '14px',
                   color: '#333',
                   fontWeight: '500'
                 }}>
