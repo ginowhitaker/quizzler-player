@@ -648,8 +648,8 @@ const joinGame = () => {
             color: 'white',
             border: 'none',
             borderRadius: '50px',
-            padding: '10px 10px',
-            fontSize: '16px',
+            padding: '10px 14px',
+            fontSize: '20px',
             fontWeight: 'bold',
             cursor: 'pointer',
             boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
@@ -660,7 +660,7 @@ const joinGame = () => {
             fontFamily: 'Gabarito, sans-serif'
           }}
         >
-           ≔
+           ⚙
         </button>
       </>
     );
