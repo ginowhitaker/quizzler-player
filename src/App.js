@@ -12,6 +12,8 @@ export default function PlayerApp() {
   const [approvalRequest, setApprovalRequest] = useState(null);
   const [role, setRole] = useState(null);
   const [teams, setTeams] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [showCategories, setShowCategories] = useState(false);
   const [venueName, setVenueName] = useState('');
   const [venueSpecials, setVenueSpecials] = useState('');
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -126,6 +128,7 @@ socket.on('player:joined', (data) => {
   console.log('Joined game:', data);
   setRole(data.role); // ADD THIS LINE
   setTeams(data.teams);
+  setCategories(data.categories || []); // Store categories
   // eslint-disable-next-line no-unused-vars
   const myTeam = data.teams.find(t => t.name === teamName);
   setUsedConfidences(data.usedConfidences || []);
@@ -536,6 +539,133 @@ const joinGame = () => {
     );
   };
 
+  // Categories Modal Component - Shows list of question categories
+  const CategoriesModal = () => {
+    if (!showCategories || categories.length === 0) return null;
+    
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.7)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        padding: '20px'
+      }} onClick={() => setShowCategories(false)}>
+        <div style={{
+          background: 'white',
+          borderRadius: '20px',
+          padding: '30px',
+          maxWidth: '500px',
+          width: '100%',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+        }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ margin: 0, color: tealColor, fontFamily: 'Gabarito, sans-serif' }}>Question Categories</h2>
+            <button 
+              onClick={() => setShowCategories(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                padding: '0',
+                color: '#666'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+            Plan your confidence strategy! Questions 1-15 (excludes Visual Round and Final Question)
+          </p>
+          
+          <div style={{ display: 'grid', gap: '10px' }}>
+            {categories.map((cat) => (
+              <div key={cat.number} style={{
+                background: '#f5f5f5',
+                padding: '15px',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px'
+              }}>
+                <div style={{
+                  background: orangeColor,
+                  color: 'white',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  flexShrink: 0
+                }}>
+                  {cat.number}
+                </div>
+                <div style={{
+                  fontSize: '16px',
+                  color: '#333',
+                  fontWeight: '500'
+                }}>
+                  {cat.category}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Floating Categories Button - Shows on all game screens
+  const CategoriesButton = () => {
+    // Only show if we have categories and we're in an active game screen
+    if (categories.length === 0 || screen === 'join' || screen === 'waitingApproval' || screen === 'completed') {
+      return null;
+    }
+    
+    return (
+      <>
+        <CategoriesModal />
+        <button
+          onClick={() => setShowCategories(true)}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            background: tealColor,
+            color: 'white',
+            border: 'none',
+            borderRadius: '50px',
+            padding: '15px 25px',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            zIndex: 999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontFamily: 'Gabarito, sans-serif'
+          }}
+        >
+          📋 Categories
+        </button>
+      </>
+    );
+  };
+
   // Standings Overlay Component
   const StandingsOverlay = () => {
     if (!showStandings) return null;
@@ -747,6 +877,7 @@ const joinGame = () => {
     return (
       <>
       <StandingsOverlay />
+      <CategoriesButton />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <Logo />
         <ApprovalBanner />
@@ -868,6 +999,9 @@ const joinGame = () => {
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
 
     return (
+      <>
+      <StandingsOverlay />
+      <CategoriesButton />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
       <ApprovalBanner />
@@ -953,6 +1087,7 @@ const joinGame = () => {
           )}
         </div>
       </div>
+      </>
     );
   }
   // Question Screen
@@ -965,6 +1100,7 @@ const joinGame = () => {
     return (
       <>
       <StandingsOverlay />
+      <CategoriesButton />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
       <ApprovalBanner />
@@ -1170,6 +1306,9 @@ const joinGame = () => {
     if (answerResult) {
       const isCorrect = answerResult === 'correct';
       return (
+        <>
+        <StandingsOverlay />
+        <CategoriesButton />
         <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <Logo />
         <ApprovalBanner />
@@ -1219,11 +1358,16 @@ const joinGame = () => {
             </div>
           </div>
         </div>
+        </div>
+      </>
       );
     }
 
     // Just submitted, waiting for host to mark
     return (
+      <>
+      <StandingsOverlay />
+      <CategoriesButton />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
       <ApprovalBanner />
@@ -1270,6 +1414,7 @@ const joinGame = () => {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -1287,6 +1432,7 @@ if (screen === 'results') {
   return (
     <>
     <StandingsOverlay />
+    <CategoriesButton />
     <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
     <Logo />
     <ApprovalBanner />
