@@ -642,13 +642,13 @@ const joinGame = () => {
           onClick={() => setShowCategories(true)}
           style={{
             position: 'fixed',
-            bottom: '20px',
-            right: '20px',
+            bottom: '10px',
+            right: '10px',
             background: tealColor,
             color: 'white',
             border: 'none',
             borderRadius: '50px',
-            padding: '15px 25px',
+            padding: '10px 10px',
             fontSize: '16px',
             fontWeight: 'bold',
             cursor: 'pointer',
@@ -660,7 +660,7 @@ const joinGame = () => {
             fontFamily: 'Gabarito, sans-serif'
           }}
         >
-          📋 Categories
+           ≔
         </button>
       </>
     );
