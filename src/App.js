@@ -1358,7 +1358,6 @@ const joinGame = () => {
             </div>
           </div>
         </div>
-        </div>
       </>
       );
     }
