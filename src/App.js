@@ -893,7 +893,32 @@ const joinGame = () => {
           </div>
 
           {!wagerSubmitted ? (
-            <div style={{ background: 'white', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ background: 'white', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', position: 'relative' }}>
+              {/* Viewer Overlay */}
+              {role === 'viewer' && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(255,255,255,0.95)',
+                  borderRadius: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  zIndex: 10
+                }}>
+                  <div style={{ fontSize: '48px' }}>👁️</div>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: tealColor }}>Viewing Only</div>
+                  <div style={{ fontSize: '14px', color: '#666', textAlign: 'center', padding: '0 20px' }}>
+                    Team captain is setting the wager...
+                  </div>
+                </div>
+              )}
+
               <h3 style={{ color: tealColor, fontSize: '22px', marginBottom: '20px', textAlign: 'center' }}>How confident are you?</h3>
               <p style={{ color: '#666', textAlign: 'center', marginBottom: '20px' }}>Wager up to 30 points!</p>
               
@@ -905,13 +930,15 @@ const joinGame = () => {
                   max="30"
                   value={wager}
                   onChange={(e) => setWager(parseInt(e.target.value) || 0)}
-                  style={{ width: '90%', padding: '20px', fontSize: '32px', textAlign: 'center', border: `3px solid ${tealColor}`, borderRadius: '10px', fontWeight: 'bold' }}
+                  disabled={role === 'viewer'}
+                  style={{ width: '90%', padding: '20px', fontSize: '32px', textAlign: 'center', border: `3px solid ${tealColor}`, borderRadius: '10px', fontWeight: 'bold', opacity: role === 'viewer' ? 0.5 : 1 }}
                 />
               </div>
 
               <button
                 onClick={submitWager}
-                style={{ width: '100%', padding: '20px', fontSize: '24px', fontWeight: 'bold', background: blueButton, color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' }}
+                disabled={role === 'viewer'}
+                style={{ width: '100%', padding: '20px', fontSize: '24px', fontWeight: 'bold', background: blueButton, color: 'white', border: 'none', borderRadius: '10px', cursor: role === 'viewer' ? 'not-allowed' : 'pointer', opacity: role === 'viewer' ? 0.5 : 1 }}
               >
                 Submit Wager: {wager} Points
               </button>
@@ -1337,11 +1364,13 @@ if (screen === 'results') {
   </div>
 )}
 
-        {/* Waiting Message */}
-        <div style={{ background: 'white', borderRadius: '15px', padding: '30px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-          <div style={{ fontSize: '48px', marginBottom: '15px' }}>⏳</div>
-          <p style={{ color: tealColor, fontSize: '18px', margin: 0 }}>Waiting for next question...</p>
-        </div>
+        {/* Waiting Message - Only show for non-final questions */}
+        {!isFinal && (
+          <div style={{ background: 'white', borderRadius: '15px', padding: '30px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+            <div style={{ fontSize: '48px', marginBottom: '15px' }}>⏳</div>
+            <p style={{ color: tealColor, fontSize: '18px', margin: 0 }}>Waiting for next question...</p>
+          </div>
+        )}
       </div>
     </div>
     </>
