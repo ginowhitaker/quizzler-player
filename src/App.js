@@ -461,6 +461,81 @@ const joinGame = () => {
     </div>
   );
 
+  // Approval Banner Component - Shows when captain receives join request
+  const ApprovalBanner = () => {
+    if (role !== 'captain' || !approvalRequest) return null;
+    
+    return (
+      <div style={{ 
+        maxWidth: '600px', 
+        margin: '0 auto 20px auto',
+        background: '#FFF9C4',
+        border: '3px solid #FFB300',
+        borderRadius: '15px',
+        padding: '20px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+        position: 'relative',
+        zIndex: 1000
+      }}>
+        <h3 style={{ color: '#F57C00', fontSize: '18px', marginBottom: '10px', margin: 0 }}>
+          👋 Join Request
+        </h3>
+        <p style={{ color: '#333', marginBottom: '15px', margin: '10px 0' }}>
+          <strong>{approvalRequest.playerName}</strong> wants to join your team as a viewer
+        </p>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={() => {
+              socket.emit('player:approveViewer', {
+                gameCode,
+                teamName,
+                requestSocketId: approvalRequest.requestSocketId,
+                playerName: approvalRequest.playerName
+              });
+              setApprovalRequest(null);
+            }}
+            style={{ 
+              flex: 1,
+              padding: '12px',
+              background: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            ✓ Approve
+          </button>
+          <button
+            onClick={() => {
+              socket.emit('player:denyViewer', {
+                requestSocketId: approvalRequest.requestSocketId,
+                playerName: approvalRequest.playerName,
+                teamName
+              });
+              setApprovalRequest(null);
+            }}
+            style={{ 
+              flex: 1,
+              padding: '12px',
+              background: '#F44336',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            ✗ Deny
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   // Standings Overlay Component
   const StandingsOverlay = () => {
     if (!showStandings) return null;
@@ -674,75 +749,7 @@ const joinGame = () => {
       <StandingsOverlay />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <Logo />
-        
-        {/* Approval Request Banner - Only show if captain */}
-        {role === 'captain' && approvalRequest && (
-          <div style={{ 
-            maxWidth: '600px', 
-            margin: '0 auto 20px auto',
-            background: '#FFF9C4',
-            border: '3px solid #FFB300',
-            borderRadius: '15px',
-            padding: '20px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
-          }}>
-            <h3 style={{ color: '#F57C00', fontSize: '18px', marginBottom: '10px' }}>
-              👋 Join Request
-            </h3>
-            <p style={{ color: '#333', marginBottom: '15px' }}>
-              <strong>{approvalRequest.playerName}</strong> wants to join your team as a viewer
-            </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={() => {
-                  socket.emit('player:approveViewer', {
-                    gameCode,
-                    teamName,
-                    requestSocketId: approvalRequest.requestSocketId,
-                    playerName: approvalRequest.playerName
-                  });
-                  setApprovalRequest(null);
-                }}
-                style={{ 
-                  flex: 1,
-                  padding: '12px',
-                  background: '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                ✓ Approve
-              </button>
-              <button
-                onClick={() => {
-                  socket.emit('player:denyViewer', {
-                    requestSocketId: approvalRequest.requestSocketId,
-                    playerName: approvalRequest.playerName,
-                    teamName
-                  });
-                  setApprovalRequest(null);
-                }}
-                style={{ 
-                  flex: 1,
-                  padding: '12px',
-                  background: '#F44336',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                ✗ Deny
-              </button>
-            </div>
-          </div>
-        )}
+        <ApprovalBanner />
 
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
 {/* Header */}
@@ -863,6 +870,7 @@ const joinGame = () => {
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
+      <ApprovalBanner />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {/* Header */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -932,6 +940,7 @@ const joinGame = () => {
       <StandingsOverlay />
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
+      <ApprovalBanner />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {/* Header */}
 <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -1136,6 +1145,7 @@ const joinGame = () => {
       return (
         <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <Logo />
+        <ApprovalBanner />
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
 {/* Header */}
 <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -1189,6 +1199,7 @@ const joinGame = () => {
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
       <Logo />
+      <ApprovalBanner />
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
 {/* Header */}
 <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
@@ -1251,6 +1262,7 @@ if (screen === 'results') {
     <StandingsOverlay />
     <div style={{ ...sunburstBg, minHeight: '100vh', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
     <Logo />
+    <ApprovalBanner />
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ background: 'white', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
