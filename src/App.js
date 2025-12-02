@@ -39,16 +39,7 @@ export default function PlayerApp() {
   const [showStandings, setShowStandings] = useState(false);
   const [standings, setStandings] = useState([]);
 
-useEffect(() => {
-  // Load saved game info from localStorage
-  const savedGameCode = localStorage.getItem('quizzler_gameCode');
-  const savedTeamName = localStorage.getItem('quizzler_teamName');
-  const savedPlayerName = localStorage.getItem('quizzler_playerName');
-  
-  if (savedGameCode) setGameCode(savedGameCode);
-  if (savedTeamName) setTeamName(savedTeamName);
-  if (savedPlayerName) setPlayerName(savedPlayerName);
-}, []);
+// Removed auto-load of saved game info - fields should be clear on app load
 
 useEffect(() => {
   const newSocket = io(BACKEND_URL, {
@@ -156,6 +147,7 @@ socket.on('player:captainChanged', (data) => {
   // Check if THIS socket is the new captain
   if (socket.id === data.newCaptainSocketId) {
     setRole('captain');
+    setUsedConfidences(data.usedConfidences || []); // Update used confidences
     alert('⭐ You are now the team captain!');
   } else {
     setRole('viewer');
@@ -242,6 +234,14 @@ socket.on('player:answerMarked', (data) => {
   setCorrectAnswer(data.correctAnswer || '');
   setScreen('results');
   submittedRef.current = false;
+});
+
+// Handle when captain submits answer - notify entire team (captain + viewers)
+socket.on('player:answerSubmitted', (data) => {
+  console.log('Answer submitted by captain:', data);
+  setSubmitted(true);
+  setSelectedConfidence(data.confidence);
+  submittedRef.current = true;
 });
 
     socket.on('player:scoresUpdated', (data) => {
