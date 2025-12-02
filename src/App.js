@@ -227,8 +227,16 @@ socket.on('player:answerMarked', (data) => {
       visualResults: data.visualResults,
       pointsEarned: data.pointsEarned
     });
+    // For visual questions, submittedAnswer is an array
+    if (data.submittedAnswer) {
+      setVisualAnswers(JSON.parse(data.submittedAnswer));
+    }
   } else {
     setAnswerResult(data.correct ? 'correct' : 'incorrect');
+    // For regular questions, store the submitted answer so viewers can see it
+    if (data.submittedAnswer) {
+      setAnswer(data.submittedAnswer);
+    }
   }
   
   setCorrectAnswer(data.correctAnswer || '');
