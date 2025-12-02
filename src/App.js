@@ -135,6 +135,13 @@ socket.on('player:joined', (data) => {
     setCurrentQuestion(data.currentQuestion.text);
     setQuestionNumber(data.currentQuestion.number);
     setIsFinal(data.currentQuestion.isFinal);
+    
+    // Check if team already submitted answer - show waiting screen instead of question input
+    if (data.answerAlreadySubmitted) {
+      setSubmitted(true);
+      submittedRef.current = true;
+    }
+    
     setScreen('question');
   } else {
     setScreen('waiting');
