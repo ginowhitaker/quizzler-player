@@ -236,7 +236,14 @@ socket.on('player:answerMarked', (data) => {
     });
     // For visual questions, submittedAnswer is an array
     if (data.submittedAnswer) {
-      setVisualAnswers(JSON.parse(data.submittedAnswer));
+      let parsedAnswers;
+      try {
+        parsedAnswers = JSON.parse(data.submittedAnswer);
+      } catch {
+        // If not JSON, treat as comma-separated string
+        parsedAnswers = data.submittedAnswer.split(',').map(a => a.trim());
+      }
+      setVisualAnswers(parsedAnswers);
     }
   } else {
     setAnswerResult(data.correct ? 'correct' : 'incorrect');
@@ -1414,17 +1421,19 @@ const joinGame = () => {
   </div>
 </div>
 
-          {/* Submitted Message */}
+           {/* Submitted Message */}
           <div style={{ background: 'white', borderRadius: '15px', padding: '40px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
             <h2 style={{ color: tealColor, fontSize: '28px', marginBottom: '15px', fontFamily: 'Gabarito, sans-serif' }}>Answer Submitted</h2>
             <p style={{ color: '#666', fontSize: '18px', marginBottom: '25px' }}>Waiting for host to review...</p>
             
-            <div style={{ background: '#f5f5f5', borderRadius: '10px', padding: '20px', marginTop: '20px' }}>
-              <div style={{ fontSize: '14px', color: tealColor, marginBottom: '5px' }}>
-                Your {isFinal ? 'Wager' : 'Confidence'}
+            {selectedConfidence > 0 && (
+              <div style={{ background: '#f5f5f5', borderRadius: '10px', padding: '20px', marginTop: '20px' }}>
+                <div style={{ fontSize: '14px', color: tealColor, marginBottom: '5px' }}>
+                  Your {isFinal ? 'Wager' : 'Confidence'}
+                </div>
+                <div style={{ fontSize: '48px', fontWeight: 'bold', color: orangeColor }}>{selectedConfidence}</div>
               </div>
-              <div style={{ fontSize: '48px', fontWeight: 'bold', color: orangeColor }}>{selectedConfidence}</div>
-            </div>
+            )}
           </div>
         </div>
       </div>
