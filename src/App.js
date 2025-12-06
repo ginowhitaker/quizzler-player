@@ -132,20 +132,29 @@ socket.on('player:joined', (data) => {
   localStorage.setItem('quizzler_playerName', playerName);
   
   if (data.currentQuestion) {
-    setCurrentQuestion(data.currentQuestion.text);
-    setQuestionNumber(data.currentQuestion.number);
-    setIsFinal(data.currentQuestion.isFinal);
-    
-    // Check if team already submitted answer - show waiting screen instead of question input
-    if (data.answerAlreadySubmitted) {
-      setSubmitted(true);
-      submittedRef.current = true;
-    }
-    
-    setScreen('question');
-  } else {
-    setScreen('waiting');
+  setCurrentQuestion(data.currentQuestion.text);
+  setQuestionNumber(data.currentQuestion.number);
+  setIsFinal(data.currentQuestion.isFinal);
+  
+  // Check if it's a visual round
+if (data.currentQuestion.type === 'visual') {
+  setIsVisual(true);
+  setImageUrl(data.currentQuestion.imageUrl || '');
+} else {
+  setIsVisual(false);
+  setImageUrl(null);
+}
+  
+  // Check if team already submitted answer - show waiting screen instead of question input
+  if (data.answerAlreadySubmitted) {
+    setSubmitted(true);
+    submittedRef.current = true;
   }
+  
+  setScreen('question');
+} else {
+  setScreen('waiting');
+}
 });
 
 socket.on('player:captainChanged', (data) => {
@@ -462,7 +471,7 @@ const joinGame = () => {
 
   // Styles
   const sunburstBg = {
-  backgroundImage: 'url(https://quizzler.pro/img/quizzler-background.png)',
+  backgroundImage: 'url(https://quizzlertrivia.com/img/quizzler-background.png)',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
@@ -479,7 +488,7 @@ const joinGame = () => {
   const Logo = () => (
     <div style={{ textAlign: 'center', marginBottom: '20px' }}>
       <img 
-        src="https://quizzler.pro/img/quizzler_logo.png" 
+        src="https://quizzlertrivia.com/img/quizzler_logo.png" 
         alt="Quizzler" 
         style={{ height: '30px', width: 'auto' }}
       />
@@ -814,7 +823,7 @@ const joinGame = () => {
       <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
         <div style={{ background: 'white', borderRadius: '20px', padding: '30px', maxWidth: '450px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.3)' }}>
          <img 
-  src="https://quizzler.pro/img/quizzler_logo.png" 
+  src="https://quizzlertrivia.com/img/quizzler_logo.png" 
   alt="Quizzler" 
   style={{ height: '30px', width: 'auto', display: 'block', margin: '0 auto 10px' }}
 />
