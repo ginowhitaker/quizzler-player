@@ -398,7 +398,7 @@ const submitWager = () => {
   };
 
   // Colors
-  const tealColor = '#0d9488';
+  const tealColor = '#286586';
   const orangeColor = '#f97316';
   const blueButton = '#1E88E5';
   
@@ -408,7 +408,7 @@ const sunburstBg = {
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundAttachment: 'fixed',
-  backgroundColor: '#0d9488'  // Fallback color while image loads
+  backgroundColor: '#286586'  // Fallback color while image loads
 };
 
 // Logo component
