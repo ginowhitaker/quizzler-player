@@ -404,16 +404,11 @@ const submitWager = () => {
   
 // Sunburst background style
 const sunburstBg = {
-  background: `
-    repeating-conic-gradient(
-      from 0deg,
-      #0d9488 0deg 10deg,
-      #0f766e 10deg 20deg
-    )
-  `,
+  backgroundImage: 'url(https://quizzlertrivia.com/img/quizzler-background.png)',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
-  backgroundAttachment: 'fixed'
+  backgroundAttachment: 'fixed',
+  backgroundColor: '#0d9488'  // Fallback color while image loads
 };
 
 // Logo component
