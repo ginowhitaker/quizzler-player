@@ -1121,10 +1121,10 @@ const StandingsOverlay = () => {
                   {!isFinal && (
                     <div style={{ marginBottom: '20px' }}>
                       <h4 style={{ color: orangeColor, fontSize: '16px', marginBottom: '10px', textAlign: 'center' }}>
-                        Choose Confidence (1-6)
+                        Choose Confidence (1-15)
                       </h4>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        {[1, 2, 3, 4, 5, 6].map((conf) => {
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((conf) => {
                           const isUsed = usedConfidences.includes(conf);
                           const isSelected = selectedConfidence === conf;
                           
@@ -1134,8 +1134,8 @@ const StandingsOverlay = () => {
                               onClick={() => !isUsed && setSelectedConfidence(conf)}
                               disabled={isUsed}
                               style={{
-                                width: '50px',
-                                height: '50px',
+                                width: '40px',
+                                height: '40px',
                                 borderRadius: '10px',
                                 border: isSelected ? `3px solid ${orangeColor}` : '2px solid #ddd',
                                 background: isUsed ? '#e0e0e0' : isSelected ? '#FFF3E0' : 'white',
