@@ -209,7 +209,7 @@ socket.on('player:approvalRequest', (data) => {
     socket.on('game:question', (data) => {
       console.log('Question received:', data);
       setCurrentQuestion(data.question);
-      setQuestionNumber(data.number);
+      setQuestionNumber(data.questionNumber);
       setIsVisual(data.type === 'visual');
       setImageUrl(data.imageUrl || null);
       setVisualAnswers(['', '', '', '', '', '']);
@@ -1360,11 +1360,28 @@ if (screen === 'results') {
 {/* Correct Answer */}
 {correctAnswer && (
   <div style={{ background: '#E8F5E9', borderRadius: '15px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-    <div style={{ fontSize: '14px', color: '#4CAF50', marginBottom: '10px', fontWeight: 'bold' }}>Correct Answer:</div>
-    <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{correctAnswer}</p>
+    <div style={{ fontSize: '14px', color: '#4CAF50', marginBottom: '10px', fontWeight: 'bold' }}>
+      {Array.isArray(correctAnswer) ? 'Correct Answers:' : 'Correct Answer:'}
+    </div>
+    {Array.isArray(correctAnswer) ? (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        {correctAnswer.map((ans, idx) => (
+          <div key={idx} style={{ 
+            background: answerResult?.visualResults?.[idx] ? '#C8E6C9' : '#FFCDD2',
+            padding: '10px', 
+            borderRadius: '8px',
+            fontSize: '16px',
+            color: '#333'
+          }}>
+            <strong>{idx + 1}.</strong> {ans}
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p style={{ fontSize: '18px', margin: 0, color: '#333' }}>{correctAnswer}</p>
+    )}
   </div>
 )}
-
         {/* Waiting Message - Only show for non-final questions */}
         {!isFinal && (
           <div style={{ background: 'white', borderRadius: '15px', padding: '30px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
