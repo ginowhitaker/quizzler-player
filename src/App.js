@@ -230,6 +230,12 @@ socket.on('player:approvalRequest', (data) => {
       console.log('Answer scored:', data);
       setTeams(data.teams);
       
+      // Update usedConfidences from team data
+      const myTeam = data.teams?.find(t => t.name === teamName);
+      if (myTeam?.usedConfidences) {
+        setUsedConfidences(myTeam.usedConfidences);
+      }
+      
       const isVisualScoring = data.isVisual;
       
       if (isVisualScoring) {
