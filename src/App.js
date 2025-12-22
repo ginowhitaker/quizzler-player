@@ -514,7 +514,7 @@ const CategoriesButton = () => {
                   }}>
                     {idx + 1}.
                   </span>
-                  <span style={{ fontSize: '16px' }}>{cat}</span>
+                  <span style={{ fontSize: '16px' }}>{typeof cat === 'object' ? cat.category : cat}</span>
                 </div>
               ))}
             </div>
