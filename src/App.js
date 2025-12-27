@@ -256,6 +256,12 @@ socket.on('player:approvalRequest', (data) => {
       setTeams(data.teams);
       setScreen('completed');
     });
+socket.on('player:finalCategoryReceived', (data) => {
+      console.log('Final category received:', data);
+      setFinalCategory(data.category);
+      setIsFinal(true);
+      setScreen('wager');
+    });
 
 socket.on('timer:start', (data) => {
   console.log('Timer started:', data);
