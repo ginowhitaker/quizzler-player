@@ -404,8 +404,14 @@ const submitWager = () => {
   
   setSelectedConfidence(wager);
   setWagerSubmitted(true);
+  
+  // Send wager to host
+  socket.emit('player:wagerSubmitted', {
+    gameCode,
+    teamName,
+    wager
+  });
 };
-
   const getLeaderboard = () => {
     return [...teams].sort((a, b) => b.score - a.score);
   };
@@ -999,7 +1005,9 @@ const StandingsOverlay = () => {
                 <span style={{ color: orangeColor, fontWeight: 'bold' }}>Category: {finalCategory}</span>
               </div>
             )}
-            <p style={{ fontSize: '20px', lineHeight: '1.6', color: '#333', margin: 0 }}>{currentQuestion}</p>
+            {(!isFinal || wagerSubmitted) && (
+  <p style={{ ... }}>{currentQuestion}</p>
+)}
           </div>
 
           {/* Visual Round Image */}
