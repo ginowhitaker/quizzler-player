@@ -257,11 +257,12 @@ socket.on('player:approvalRequest', (data) => {
       setScreen('completed');
     });
 socket.on('player:finalCategoryReceived', (data) => {
-      console.log('Final category received:', data);
-      setFinalCategory(data.category);
-      setIsFinal(true);
-      setScreen('wager');
-    });
+  console.log('Final category received:', data);
+  setFinalCategory(data.category);
+  setIsFinal(true);
+  setWagerSubmitted(false);
+  setScreen('question');
+});
 
 socket.on('timer:start', (data) => {
   console.log('Timer started:', data);
