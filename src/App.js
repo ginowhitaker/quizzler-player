@@ -1006,8 +1006,9 @@ const StandingsOverlay = () => {
               </div>
             )}
             {(!isFinal || wagerSubmitted) && (
-  <p style={{ ... }}>{currentQuestion}</p>
-)}
+              <p style={{ fontSize: '20px', lineHeight: '1.6', color: '#333', margin: 0 }}>{currentQuestion}</p>
+            )}
+            
           </div>
 
           {/* Visual Round Image */}
