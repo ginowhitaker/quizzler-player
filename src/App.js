@@ -406,7 +406,7 @@ const submitWager = () => {
   setWagerSubmitted(true);
   
   // Send wager to host
-  socket.emit('player:wagerSubmitted', {
+  socket.emit('player:submitWager', {
     gameCode,
     teamName,
     wager
