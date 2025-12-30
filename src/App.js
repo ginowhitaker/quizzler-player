@@ -256,22 +256,26 @@ socket.on('player:approvalRequest', (data) => {
       setTeams(data.teams);
       setScreen('completed');
     });
+
 socket.on('player:finalCategoryReceived', (data) => {
   console.log('Final category received:', data);
   setFinalCategory(data.category);
+  setCurrentQuestion('');  // Clear previous question
+  setAnswer('');           // Clear previous answer
   setIsFinal(true);
   setWagerSubmitted(false);
   setScreen('question');
 });
 
 socket.on('player:finalQuestionReceived', (data) => {
-      console.log('Final question received:', data);
-      setCurrentQuestion(data.question);
-      setIsFinal(true);
-      setAnswer('');
-      setSubmitted(false);
-      setScreen('question');
-    });
+  console.log('Final question received:', data);
+  setCurrentQuestion(data.question);
+  setIsFinal(true);
+  setAnswer('');
+  setSubmitted(false);
+  // Don't reset wagerSubmitted - keep it true!
+  setScreen('question');
+});
 
 socket.on('timer:start', (data) => {
   console.log('Timer started:', data);
