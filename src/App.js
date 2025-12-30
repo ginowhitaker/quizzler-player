@@ -264,6 +264,15 @@ socket.on('player:finalCategoryReceived', (data) => {
   setScreen('question');
 });
 
+socket.on('player:finalQuestionReceived', (data) => {
+      console.log('Final question received:', data);
+      setCurrentQuestion(data.question);
+      setIsFinal(true);
+      setAnswer('');
+      setSubmitted(false);
+      setScreen('question');
+    });
+
 socket.on('timer:start', (data) => {
   console.log('Timer started:', data);
   setTimerDuration(data.duration);
@@ -391,8 +400,8 @@ const submitWager = () => {
     alert('Wager cannot be negative');
     return;
   }
-  if (wager > Math.max(currentScore, 20)) {
-    alert(`Maximum wager is ${Math.max(currentScore, 20)} points`);
+  if (wager > Math.min(30, Math.max(currentScore, 20))) {
+    alert(`Maximum wager is ${Math.min(30, Math.max(currentScore, 20))} points`);
     return;
   }
   
@@ -925,7 +934,7 @@ const StandingsOverlay = () => {
   // Question Screen
   if (screen === 'question') {
     const myScore = teams.find(t => t.name === teamName)?.score || 0;
-    const maxWager = Math.max(myScore, 20);
+    const maxWager = Math.min(30, Math.max(myScore, 20));
     
     return (
       <>
