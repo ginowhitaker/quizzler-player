@@ -341,6 +341,7 @@ useEffect(() => {
   };
 
   const submitAnswer = () => {
+    console.log('submitAnswer called', { isFinal, wagerSubmitted, answer, submitted });
     if (submittedRef.current) return; // Prevent double submission
     
     const finalConfidence = isFinal ? wager : (selectedConfidence || 0);
