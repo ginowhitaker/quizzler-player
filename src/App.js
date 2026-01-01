@@ -273,7 +273,7 @@ socket.on('player:finalQuestionReceived', (data) => {
   setIsFinal(true);
   setAnswer('');
   setSubmitted(false);
-  // Don't reset wagerSubmitted - keep it true!
+  submittedRef.current = false;  // ADD THIS LINE
   setScreen('question');
 });
 
