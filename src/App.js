@@ -5,6 +5,16 @@ import { Trophy, Crown, Hourglass, Star, Eye, Timer, Camera, Check, X } from 'lu
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://quizzler-production.up.railway.app';
 
+const Logo = () => (
+  <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+    <img 
+      src="https://quizzlertrivia.com/img/quizzler_logo.png" 
+      alt="Quizzler" 
+      style={{ height: '30px', width: 'auto' }}
+    />
+  </div>
+);
+
 export default function PlayerApp() {
   const [socket, setSocket] = useState(null);
   const [screen, setScreen] = useState('join');
@@ -443,17 +453,6 @@ const sunburstBg = {
   backgroundAttachment: 'fixed',
   backgroundColor: '#286586'  // Fallback color while image loads
 };
-
-// Logo component
-const Logo = () => (
-  <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-    <img 
-      src="https://quizzlertrivia.com/img/quizzler-logo-wt.png" 
-      alt="Quizzler" 
-      style={{ height: '30px', width: 'auto' }}
-    />
-  </div>
-);
 
 // Categories button component
 const CategoriesButton = () => {
