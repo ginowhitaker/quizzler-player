@@ -240,10 +240,13 @@ socket.on('player:approvalRequest', (data) => {
       console.log('Answer scored:', data);
       setTeams(data.teams);
       
-      // Update usedConfidences from team data
+      // Update usedConfidences - merge server data with local state
       const myTeam = data.teams?.find(t => t.name === teamName);
       if (myTeam?.usedConfidences) {
-        setUsedConfidences(myTeam.usedConfidences);
+        setUsedConfidences(prev => {
+          const merged = [...new Set([...prev, ...myTeam.usedConfidences])];
+          return merged;
+        });
       }
       
       const isVisualScoring = data.isVisual;
