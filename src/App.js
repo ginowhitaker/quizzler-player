@@ -402,6 +402,11 @@ useEffect(() => {
         questionNumber,
         isFinal
       });
+      
+      // Mark confidence as used immediately (for regular questions only)
+      if (!isFinal && selectedConfidence) {
+        setUsedConfidences(prev => [...prev, selectedConfidence]);
+      }
     }
     
     setScreen('submitted');
