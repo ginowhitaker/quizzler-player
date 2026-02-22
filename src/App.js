@@ -308,17 +308,19 @@ socket.on('standings:show', (data) => {
   setShowStandings(true);
 });
 
-socket.on('standings:hide', () => {
-  console.log('Hide standings');
-  setShowStandings(false);
+socket.on('player:gameCompleted', (data) => {
+  console.log('Game completed - final rankings:', data);
+  setTeams(data.teams);  // This is what getLeaderboard() uses
+  setStandings(data.teams);
+  setShowStandings(true);
+  setScreen('completed');
 });
-
     return () => {
       socket.off('player:joined');
       socket.off('team:updated');
       socket.off('game:question');
       socket.off('answer:scored');
-      socket.off('game:completed');
+      socket.off('player:gameCompleted');
       socket.off('timer:start');
       socket.off('timer:stop');
       socket.off('standings:show');
