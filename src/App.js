@@ -47,6 +47,11 @@ export default function PlayerApp() {
   // Holds the current game/team/player so the socket's reconnect handler
   // always sees the latest values (state inside that handler is frozen at app load)
   const sessionRef = useRef({ gameCode: '', teamName: '', playerName: '' });
+  // Keep the phone screen awake during a game (player can turn it off)
+  const [keepAwake, setKeepAwake] = useState(() => {
+    try { return localStorage.getItem('quizzler_keepAwake') !== 'off'; } catch { return true; }
+  });
+  const wakeLockRef = useRef(null);
   // eslint-disable-next-line no-unused-vars
   const [timerDuration, setTimerDuration] = useState(0); // Total timer duration in seconds
   const [timeRemaining, setTimeRemaining] = useState(0); // Current countdown
@@ -387,6 +392,52 @@ socket.on('player:gameCompleted', (data) => {
     };
   }, [socket, teamName, playerName]);
 
+// Screen wake lock: keep the phone from sleeping while in a game
+const requestWakeLock = async () => {
+  try {
+    if (!('wakeLock' in navigator)) return; // older browsers: silently skip
+    if (wakeLockRef.current && !wakeLockRef.current.released) return; // already held
+    if (document.visibilityState !== 'visible') return;
+    wakeLockRef.current = await navigator.wakeLock.request('screen');
+    console.log('Screen wake lock on');
+  } catch (err) {
+    console.log('Wake lock not available:', err.message);
+  }
+};
+
+const releaseWakeLock = () => {
+  if (wakeLockRef.current) {
+    wakeLockRef.current.release().catch(() => {});
+    wakeLockRef.current = null;
+  }
+};
+
+useEffect(() => {
+  const inGame = keepAwake && screen !== 'join' && screen !== 'completed';
+  if (!inGame) {
+    releaseWakeLock();
+    return;
+  }
+  requestWakeLock();
+  // The browser drops the lock when the tab is hidden; re-take it on return.
+  // Some browsers only grant it after a tap, so also retry on the next tap.
+  const retake = () => { if (document.visibilityState === 'visible') requestWakeLock(); };
+  document.addEventListener('visibilitychange', retake);
+  document.addEventListener('click', retake);
+  document.addEventListener('touchend', retake);
+  return () => {
+    document.removeEventListener('visibilitychange', retake);
+    document.removeEventListener('click', retake);
+    document.removeEventListener('touchend', retake);
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [keepAwake, screen]);
+
+const toggleKeepAwake = (on) => {
+  setKeepAwake(on);
+  try { localStorage.setItem('quizzler_keepAwake', on ? 'on' : 'off'); } catch {}
+};
+
 // Timer countdown effect
 useEffect(() => {
   if (!timerActive || timeRemaining <= 0) return;
@@ -406,6 +457,7 @@ useEffect(() => {
 
   const joinGame = () => {
     if (gameCode && teamName && playerName) {
+      if (keepAwake) requestWakeLock(); // ask during the tap, when browsers allow it
       socket.emit('player:join', { 
         gameCode: gameCode.toUpperCase(), 
         teamName,
@@ -891,6 +943,16 @@ const StandingsOverlay = () => {
           >
             Join Game
           </button>
+
+          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '18px', color: tealColor, fontSize: '15px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={keepAwake}
+              onChange={(e) => toggleKeepAwake(e.target.checked)}
+              style={{ width: '18px', height: '18px', accentColor: blueButton }}
+            />
+            Keep my screen on during the game
+          </label>
         </div>
       </div>
     );
