@@ -44,6 +44,9 @@ export default function PlayerApp() {
   const [submitted, setSubmitted] = useState(false);
   const [answerResult, setAnswerResult] = useState(null); // null, 'correct', or 'incorrect'
   const submittedRef = useRef(false);
+  // Holds the current game/team/player so the socket's reconnect handler
+  // always sees the latest values (state inside that handler is frozen at app load)
+  const sessionRef = useRef({ gameCode: '', teamName: '', playerName: '' });
   // eslint-disable-next-line no-unused-vars
   const [timerDuration, setTimerDuration] = useState(0); // Total timer duration in seconds
   const [timeRemaining, setTimeRemaining] = useState(0); // Current countdown
@@ -57,7 +60,7 @@ useEffect(() => {
   const newSocket = io(BACKEND_URL, {
     transports: ['websocket', 'polling'],
     reconnection: true,
-    reconnectionAttempts: 10,
+    reconnectionAttempts: Infinity, // never give up (phones can sleep for minutes)
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
     timeout: 20000
@@ -70,6 +73,7 @@ useEffect(() => {
     console.log('Connected to backend');
     
     // If reconnecting mid-game, rejoin the game room
+    const { gameCode, teamName, playerName } = sessionRef.current;
     if (gameCode && teamName && playerName) {
       console.log('Rejoining game:', gameCode, 'as team:', teamName, 'player:', playerName);
       newSocket.emit('player:join', { gameCode, teamName, playerName });
@@ -119,8 +123,25 @@ useEffect(() => {
     console.error('Socket error:', error);
     alert(error.message);
   });
-  
-  return () => newSocket.close();
+
+  // When the phone wakes up / the tab comes back, reconnect right away
+  // instead of waiting for the next automatic retry
+  const handleWake = () => {
+    if (document.visibilityState === 'visible' && !newSocket.connected) {
+      console.log('Page visible again - reconnecting');
+      newSocket.connect();
+    }
+  };
+  document.addEventListener('visibilitychange', handleWake);
+  window.addEventListener('focus', handleWake);
+  window.addEventListener('online', handleWake);
+
+  return () => {
+    document.removeEventListener('visibilitychange', handleWake);
+    window.removeEventListener('focus', handleWake);
+    window.removeEventListener('online', handleWake);
+    newSocket.close();
+  };
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
 
@@ -138,6 +159,9 @@ socket.on('player:joined', (data) => {
   setVenueName(data.venueName || '');
   setVenueSpecials(data.venueSpecials || '');
   
+  // Remember who we are so a reconnect can rejoin automatically
+  sessionRef.current = { gameCode: data.gameCode, teamName, playerName };
+
   // Save to localStorage for easy rejoin
   localStorage.setItem('quizzler_gameCode', data.gameCode);
   localStorage.setItem('quizzler_teamName', teamName);
