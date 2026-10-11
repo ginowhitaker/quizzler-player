@@ -349,6 +349,16 @@ socket.on('player:gameCompleted', (data) => {
       socket.off('timer:stop');
       socket.off('standings:show');
       socket.off('standings:hide');
+      // These were never removed, so duplicate copies piled up each time
+      // this effect re-ran (e.g. while typing a team or player name)
+      socket.off('player:captainChanged');
+      socket.off('player:waitingApproval');
+      socket.off('player:approved');
+      socket.off('player:denied');
+      socket.off('player:approvalRequest');
+      socket.off('game:completed');
+      socket.off('player:finalCategoryReceived');
+      socket.off('player:finalQuestionReceived');
     };
   }, [socket, teamName, playerName]);
 
