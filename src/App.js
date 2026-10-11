@@ -167,6 +167,31 @@ socket.on('player:joined', (data) => {
   localStorage.setItem('quizzler_teamName', teamName);
   localStorage.setItem('quizzler_playerName', playerName);
   
+  // Rejoining during the final round: restore wager / final question screen
+  if (data.finalState) {
+    const fs = data.finalState;
+    setIsFinal(true);
+    setIsVisual(false);
+    setImageUrl(null);
+    setFinalCategory(fs.category || '');
+    setCurrentQuestion(fs.question || '');
+    setWagerSubmitted(!!fs.wagerSubmitted);
+    if (fs.wagerSubmitted) {
+      setWager(fs.wager || 0);
+      setSelectedConfidence(fs.wager || 0);
+    }
+    if (fs.answerSubmitted) {
+      setSubmitted(true);
+      submittedRef.current = true;
+      setScreen('submitted');
+    } else {
+      setSubmitted(false);
+      submittedRef.current = false;
+      setScreen('question');
+    }
+    return;
+  }
+
   if (data.currentQuestion) {
   setCurrentQuestion(data.currentQuestion.text);
   setQuestionNumber(data.currentQuestion.number);
