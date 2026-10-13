@@ -15,12 +15,48 @@ const Logo = () => (
   </div>
 );
 
+// ---- Saved session (so a browser refresh puts the player back in their game) ----
+const SESSION_MAX_AGE_MS = 6 * 60 * 60 * 1000; // forget after 6 hours
+
+function loadSavedSession() {
+  try {
+    const gameCode = localStorage.getItem('quizzler_gameCode');
+    const teamName = localStorage.getItem('quizzler_teamName');
+    const playerName = localStorage.getItem('quizzler_playerName');
+    const savedAt = Number(localStorage.getItem('quizzler_savedAt') || 0);
+    if (!gameCode || !teamName || !playerName) return null;
+    if (!savedAt || Date.now() - savedAt > SESSION_MAX_AGE_MS) return null;
+    return { gameCode, teamName, playerName };
+  } catch {
+    return null;
+  }
+}
+
+function saveSession(gameCode, teamName, playerName) {
+  try {
+    localStorage.setItem('quizzler_gameCode', gameCode);
+    localStorage.setItem('quizzler_teamName', teamName);
+    localStorage.setItem('quizzler_playerName', playerName);
+    localStorage.setItem('quizzler_savedAt', String(Date.now()));
+  } catch {}
+}
+
+function clearSavedSession() {
+  try {
+    ['quizzler_gameCode', 'quizzler_teamName', 'quizzler_playerName', 'quizzler_savedAt']
+      .forEach(k => localStorage.removeItem(k));
+  } catch {}
+}
+
 export default function PlayerApp() {
+  const [initialSession] = useState(loadSavedSession);
   const [socket, setSocket] = useState(null);
-  const [screen, setScreen] = useState('join');
-  const [gameCode, setGameCode] = useState('');
-  const [teamName, setTeamName] = useState('');
-  const [playerName, setPlayerName] = useState('');
+  const [screen, setScreen] = useState(initialSession ? 'rejoining' : 'join');
+  const [gameCode, setGameCode] = useState(initialSession?.gameCode || '');
+  const [teamName, setTeamName] = useState(initialSession?.teamName || '');
+  const [playerName, setPlayerName] = useState(initialSession?.playerName || '');
+  // True while we're automatically rejoining after a refresh
+  const autoRejoinRef = useRef(!!initialSession);
   const [approvalRequest, setApprovalRequest] = useState(null);
   const [role, setRole] = useState(null);
   const [teams, setTeams] = useState([]);
@@ -46,7 +82,7 @@ export default function PlayerApp() {
   const submittedRef = useRef(false);
   // Holds the current game/team/player so the socket's reconnect handler
   // always sees the latest values (state inside that handler is frozen at app load)
-  const sessionRef = useRef({ gameCode: '', teamName: '', playerName: '' });
+  const sessionRef = useRef(initialSession || { gameCode: '', teamName: '', playerName: '' });
   // Keep the phone screen awake during a game (player can turn it off)
   const [keepAwake, setKeepAwake] = useState(() => {
     try { return localStorage.getItem('quizzler_keepAwake') !== 'off'; } catch { return true; }
@@ -59,7 +95,20 @@ export default function PlayerApp() {
   const [showStandings, setShowStandings] = useState(false);
   const [standings, setStandings] = useState([]);
 
-// Removed auto-load of saved game info - fields should be clear on app load
+// Saved game info is loaded above (loadSavedSession) and expires after 6 hours,
+// and is cleared when the game ends, so old games don't linger
+
+// Leave the current game on this phone and go back to a blank join screen
+const leaveGame = () => {
+  clearSavedSession();
+  autoRejoinRef.current = false;
+  sessionRef.current = { gameCode: '', teamName: '', playerName: '' };
+  setGameCode('');
+  setTeamName('');
+  setPlayerName('');
+  setRole(null);
+  setScreen('join');
+};
 
 useEffect(() => {
   const newSocket = io(BACKEND_URL, {
@@ -126,6 +175,15 @@ useEffect(() => {
   
   newSocket.on('error', (error) => {
     console.error('Socket error:', error);
+    // If an automatic rejoin after refresh fails (e.g. the game is over),
+    // quietly go back to the join screen instead of showing an error
+    if (autoRejoinRef.current) {
+      autoRejoinRef.current = false;
+      clearSavedSession();
+      sessionRef.current = { gameCode: '', teamName: '', playerName: '' };
+      setScreen('join');
+      return;
+    }
     alert(error.message);
   });
 
@@ -167,10 +225,10 @@ socket.on('player:joined', (data) => {
   // Remember who we are so a reconnect can rejoin automatically
   sessionRef.current = { gameCode: data.gameCode, teamName, playerName };
 
-  // Save to localStorage for easy rejoin
-  localStorage.setItem('quizzler_gameCode', data.gameCode);
-  localStorage.setItem('quizzler_teamName', teamName);
-  localStorage.setItem('quizzler_playerName', playerName);
+  autoRejoinRef.current = false;
+
+  // Save so a browser refresh can rejoin automatically
+  saveSession(data.gameCode, teamName, playerName);
   
   // Rejoining during the final round: restore wager / final question screen
   if (data.finalState) {
@@ -211,13 +269,17 @@ if (data.currentQuestion.type === 'visual') {
   setImageUrl(null);
 }
   
-  // Check if team already submitted answer - show waiting screen instead of question input
+  // Team already answered this question (e.g. after a refresh) - show the
+  // submitted screen so nobody can answer again and burn another confidence
   if (data.answerAlreadySubmitted) {
     setSubmitted(true);
     submittedRef.current = true;
+    setScreen('submitted');
+  } else {
+    setSubmitted(false);
+    submittedRef.current = false;
+    setScreen('question');
   }
-  
-  setScreen('question');
 } else {
   setScreen('waiting');
 }
@@ -320,6 +382,7 @@ socket.on('player:approvalRequest', (data) => {
 
     socket.on('game:completed', (data) => {
       console.log('Game completed:', data);
+      clearSavedSession();
       setTeams(data.teams);
       setScreen('completed');
     });
@@ -364,6 +427,7 @@ socket.on('standings:show', (data) => {
 
 socket.on('player:gameCompleted', (data) => {
   console.log('Game completed - final rankings:', data);
+  clearSavedSession();
   setTeams(data.teams);  // This is what getLeaderboard() uses
   setStandings(data.teams);
   setShowStandings(true);
@@ -693,22 +757,23 @@ const CategoriesButton = () => {
 const ApprovalBanner = () => {
   if (!approvalRequest || role !== 'captain') return null;
   
+  // Event names and fields must match the backend handlers
+  // (player:approveViewer / player:denyViewer, which need requestSocketId)
   const handleApprove = () => {
-    socket.emit('player:approveRequest', {
+    socket.emit('player:approveViewer', {
       gameCode,
       teamName,
       playerName: approvalRequest.playerName,
-      approved: true
+      requestSocketId: approvalRequest.requestSocketId
     });
     setApprovalRequest(null);
   };
-  
+
   const handleDeny = () => {
-    socket.emit('player:approveRequest', {
-      gameCode,
+    socket.emit('player:denyViewer', {
       teamName,
       playerName: approvalRequest.playerName,
-      approved: false
+      requestSocketId: approvalRequest.requestSocketId
     });
     setApprovalRequest(null);
   };
@@ -890,6 +955,32 @@ const StandingsOverlay = () => {
 };
 
   // Join Screen
+  // Shown briefly after a refresh while we automatically rejoin the saved game
+  if (screen === 'rejoining') {
+    return (
+      <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
+        <div style={{ background: 'white', borderRadius: '20px', padding: '30px', maxWidth: '450px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.3)', textAlign: 'center' }}>
+          <img
+            src="https://quizzlertrivia.com/img/quizzler_logo.png"
+            alt="Quizzler"
+            style={{ height: '30px', width: 'auto', display: 'block', margin: '0 auto 20px' }}
+          />
+          <Hourglass size={48} color={tealColor} style={{ display: 'inline-block', marginBottom: '15px' }} />
+          <p style={{ color: tealColor, fontSize: '20px', fontWeight: 'bold', margin: '0 0 8px' }}>Rejoining your game…</p>
+          <p style={{ color: '#666', fontSize: '16px', margin: '0 0 25px' }}>
+            {teamName} · Game {gameCode}
+          </p>
+          <button
+            onClick={leaveGame}
+            style={{ background: 'none', border: 'none', color: tealColor, textDecoration: 'underline', fontSize: '15px', cursor: 'pointer' }}
+          >
+            Join a different game
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (screen === 'join') {
     return (
       <div style={{ ...sunburstBg, minHeight: '100vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', fontFamily: 'Gabarito, sans-serif' }}>
@@ -1059,6 +1150,15 @@ const StandingsOverlay = () => {
                 <span style={{ fontWeight: 'bold', color: orangeColor }}>{team.score}</span>
               </div>
             ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <button
+              onClick={() => { if (window.confirm('Leave this game on this phone?')) leaveGame(); }}
+              style={{ background: 'none', border: 'none', color: 'white', textDecoration: 'underline', fontSize: '14px', cursor: 'pointer', opacity: 0.85 }}
+            >
+              Leave game
+            </button>
           </div>
         </div>
       </div>
